@@ -21,11 +21,18 @@ class ExperienceReplayMemory():
 		a = experience[1]
 		r = experience[2]
 		sp = experience[3]
-		new_X = np.array((s[0]/16,s[1]/16,r/100)).reshape(1,-1)
+		new_X = np.array((s[0]/16,s[1]/16)).reshape(1,-1)
 		if self.X.size == 0:
 			self.X = new_X
 		else:
 			self.X = np.append(self.X,new_X,axis=0)
+
+	def get_rewards(self):
+		rewards = []
+		for i in range(len(self.memory)):
+			rewards.append(self.memory[i][2])
+		return rewards
+
 
 
 

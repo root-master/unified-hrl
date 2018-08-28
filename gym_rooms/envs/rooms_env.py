@@ -17,7 +17,9 @@ COLORS = {
 	'blue'  : (0, 0, 255),
 	'purple': (112, 39, 195),
 	'yellow': (255, 255, 0),
-	'grey'  : (100, 100, 100)
+	'grey'  : (100, 100, 100),
+	'white' : (255,255,255),
+	'black' : (0, 0, 0)
 }
 
 COLOR_NAMES = sorted(list(COLORS.keys()))
@@ -213,7 +215,7 @@ class Grid:
 
 		# Draw background (out-of-world) tiles the same colors as walls
 		# so the agent understands these areas are not reachable
-		c = COLORS['grey']
+		c = COLORS['white']
 		r.setLineColor(c[0], c[1], c[2])
 		r.setColor(c[0], c[1], c[2])
 		r.drawPolygon([
@@ -235,7 +237,7 @@ class Grid:
 			0,
 			widthPx,
 			heightPx,
-			0, 0, 0
+			255, 255, 255
 		)
 
 		# Draw grid lines
@@ -383,10 +385,9 @@ class MiniGridEnv(gym.Env):
 		# Place the agent in the starting position and direction
 		self.agentPos = self.startPos
 		self.agentDir = self.startDir
-
-		# Return first observation
-		obs = self._genObs()
+		obs = self.agentPos
 		state = (obs[0],self.gridSize-obs[1]-1)
+		self.state = state
 		return state
 
 	def seed(self, seed=1337):
@@ -482,20 +483,21 @@ class MiniGridEnv(gym.Env):
 		if targetCell == None:
 			self.agentPos = newPos
 		elif targetCell.type == 'wall':
-			reward = -1 # bumped to wall
+			reward = -2 # bumped to wall
 			newPos = oldPos
 		elif targetCell.type == 'key':
-			reward = 10
+			reward = +10
 			if self.step_info['has_key'] == False:
 				self.step_info['has_key'] = True
 				self.grid.set(newPos[0], newPos[1], None)
 		elif targetCell.type == 'box' and self.step_info['has_key'] == True:
-			reward = 100
+			reward = +40
 			self.step_info['has_car'] = True
 			terminal = True
 
 		self.agentPos = newPos
 		state = (newPos[0],self.gridSize-newPos[1]-1)
+		self.state = state
 
 		return state, reward, terminal, self.step_info
 
@@ -555,9 +557,6 @@ class MiniGridEnv(gym.Env):
 			return r.getPixmap()
 
 		return r
-
-	def _genObs(self):
-		return self.agentPos
 
 class Room:
 	def __init__(self,top,size,color,objects):		
@@ -722,6 +721,41 @@ class RoomsEnv(MiniGridEnv):
 	def step(self, action):
 		obs, reward, done, info = MiniGridEnv.step(self, action)
 		return obs, reward, done, info
+
+	def set_epsilon_greedy_type_subgoal(self, G, epsilon):
+		if random.random() < epsilon:
+			return self.set_random_intrinsic_goal_from_states()
+		else:
+			return self.set_random_intrinsic_goal_from_subgoals(G)
+
+	def set_random_intrinsic_goal_from_states(self):
+		while True:
+			room = self._randElem(self.rooms)
+			pos = self._randPos(room, border=2)
+			if pos == self.startPos or self.grid.get(*pos) != None:
+				continue
+			else:
+				self.intrinsic_goal_pos = pos
+				goal_state = (pos[0],self.gridSize-pos[1]-1)
+				self.goal_state = goal_state
+				return goal_state
+
+	def set_random_intrinsic_goal_from_subgoals(self, G):
+		if len(G) == 0:
+			return self.set_random_intrinsic_goal_from_states()
+		return self._randElem(G)
+
+	def get_intrinsic_reward(self, s, g, reward):
+		if s == g:
+			reward = 1
+			done = True
+		elif reward >= 0:
+			reward = -0.1
+			done = False
+		elif reward<0:
+			reward = -0.5
+			done = False
+		return reward, done 
 
 register(
 	id='Rooms-v0',
