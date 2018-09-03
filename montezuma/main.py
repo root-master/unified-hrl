@@ -25,7 +25,7 @@ LEARNING_FREQ = 4
 LEARNING_RATE = 0.00025
 ALPHA = 0.95
 EPS = 0.01
-LEARNING_STARTS = 50000
+LEARNING_STARTS = 1000
 MAX_FRAMES = 10000000
 gamma = 0.99
 num_param_updates = 0
@@ -277,6 +277,9 @@ for t in range(max_frames):
 			with torch.cuda.device(0):
 				x = torch.Tensor(x).type(dtype).to(device0)/255
 				xp = torch.Tensor(x).cuda().type(dtype).to(device0)/255
+		else:
+			x = torch.Tensor(x).type(dtype) / 255
+			xp = torch.Tensor(x).type(dtype)/255
 
 		if torch.cuda.device_count() > 0:
 			Qt.cuda()
