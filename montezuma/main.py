@@ -17,16 +17,16 @@ logger = Logger('./logs')
 # Global Variables
 BATCH_SIZE = 32
 TASK = 'MontezumaRevenge-v0'
-REPLAY_BUFFER_SIZE = 1000000
+REPLAY_BUFFER_SIZE = 10000
 FRAME_HISTORY_LEN = 4
-TARGET_UPDATE_FREQ = 10000
+TARGET_UPDATE_FREQ = 1000
 GAMMA = 0.99
 LEARNING_FREQ = 4
 LEARNING_RATE = 0.00025
 ALPHA = 0.95
 EPS = 0.01
-LEARNING_STARTS = 1000
-MAX_FRAMES = 10000000
+LEARNING_STARTS = 100
+MAX_FRAMES = 10000
 gamma = 0.99
 num_param_updates = 0
 mean_episode_reward      = -float('nan')
@@ -304,10 +304,10 @@ for t in range(max_frames):
 		clipped_error = -1.0 * error.clamp(-1, 1)
 
 		optimizer.zero_grad()
-		qt.backward(clipped_error.data.unsqueeze(1))
+		qt.backward(clipped_error.data)
 		optimizer.step()
 		num_param_updates += 1
-		
+
 		if num_param_updates % TARGET_UPDATE_FREQ == 0:
 			Qt_t.load_state_dict(Qt.state_dict())
 
