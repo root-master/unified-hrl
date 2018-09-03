@@ -67,7 +67,7 @@ for param in Qt_t.parameters():
 if torch.cuda.device_count() > 0:
 	Qt.cuda()
 	Qt = nn.DataParallel(Qt)
-	Qt_t = nn.DataParalel(Qt_t)
+	Qt_t = nn.DataParallel(Qt_t)
 	batch_size = BATCH_SIZE * torch.cuda.device_count()
 else:
 	batch_size = BATCH_SIZE
