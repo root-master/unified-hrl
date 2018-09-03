@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchvision.transforms as T
+import pickle
 
 from logger import Logger
 logger = Logger('./logs')
@@ -19,13 +20,11 @@ BATCH_SIZE = 64
 TASK = 'MontezumaRevenge-v0'
 
 # MAX_FRAMES = 50000000
-MAX_FRAMES = 20000
-
+MAX_FRAMES = 2000
 # REPLAY_BUFFER_SIZE = 1000000
 REPLAY_BUFFER_SIZE = 10000
 
-FRAME_HISTORY_LEN = 4
-#TARGET_UPDATE_FREQ = 10000
+# TARGET_UPDATE_FREQ = 10000
 TARGET_UPDATE_FREQ = 1000
 
 GAMMA = 0.99
@@ -33,9 +32,8 @@ LEARNING_FREQ = 4
 ALPHA = 0.95
 EPS = 0.01
 # LEARNING_STARTS = 50000
-LEARNING_STARTS = 500
+LEARNING_STARTS = 100
 
-gamma = 0.99
 num_param_updates = 0
 mean_episode_reward      = -float('nan')
 best_mean_episode_reward = -float('inf')
@@ -188,10 +186,6 @@ sd = SubgoalDiscovery()
 # outliers_low_return = []
 # outliers_high_return = []
 
-outliers = []
-centroids = []
-G = []
-episode_rewards = []
 
 ### PHASE I: INTRINSIC MOTIVATION LEARNING + SUBGOAL DISCOVERY 
 ### Goal: Training the Controller via intrinsic motivation learning
@@ -210,6 +204,19 @@ firs_time = True
 num_param_updates = 0
 epsilon = 1
 first_time_kmeans = True
+
+# saving training variables
+outliers = []
+centroids = []
+G = []
+episode_rewards = []
+
+mean_reward_episodes_list = []
+best_reward_episodes_list = []
+episode_rewards_list = []
+
+
+
 for t in range(MAX_FRAMES):
 	x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
 	if t < LEARNING_STARTS:
@@ -301,7 +308,7 @@ for t in range(MAX_FRAMES):
 		qt_t_p1 = qt_t_p1.gather(1, a_prime.unsqueeze(1))
 		qt_t_p1 = qt_t_p1.squeeze()
 
-		error = rewards + gamma * (1 - intrinsic_dones) * qt_t_p1 - qt
+		error = rewards + GAMMA * (1 - intrinsic_dones) * qt_t_p1 - qt
 		clipped_error = -1.0 * error.clamp(-1, 1)
 
 		optimizer.zero_grad()
@@ -339,6 +346,13 @@ for t in range(MAX_FRAMES):
 		print("exploration %f" % epsilon)
 		print("learning_rate %f" % LEARNING_RATE)
 		sys.stdout.flush()
+
+		best_reward_episodes_list.append(best_mean_episode_reward)
+		mean_reward_episodes_list.append(mean_episode_reward)
+		episode_rewards_list.append(sum(episode_rewards))
+		results_file_path = './results/pickle_results_t_'+ str(t) +'.pkl'
+		with open(results_file_path, 'wb') as f: 
+			pickle.dump([best_reward_episodes_list,mean_reward_episodes_list,episode_rewards_list], f)		
 
 		#============ TensorBoard logging ============#
 		# Log the scalar values
@@ -380,5 +394,14 @@ for t in range(MAX_FRAMES):
 			sd.feed_data(X)
 			sd.find_kmeans_clusters(init=C)
 			C = sd.cluster_centroids()
+		centroids.append(C)
+		results_file_path = './results/clustering_results_t_'+ str(t) +'.pkl'
+		with open(results_file_path, 'wb') as f: 
+			pickle.dump([C,sd.kmeans], f)		
+
 		print('Current discovered centroids')
 		print(C)
+
+# saving learning paramters
+
+
