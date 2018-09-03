@@ -71,8 +71,8 @@ for param in Qt_t.parameters():
 
 if torch.cuda.device_count() > 0:
 	Qt.cuda()
-	Qt = nn.DataParallel(Qt)
-	Qt_t = nn.DataParallel(Qt_t)
+	Qt = nn.DataParallel(Qt).to(device0)
+	Qt_t = nn.DataParallel(Qt_t).to(device0)
 	batch_size = BATCH_SIZE * torch.cuda.device_count()
 else:
 	batch_size = BATCH_SIZE
@@ -283,8 +283,8 @@ for t in range(max_frames):
 
 		if torch.cuda.device_count() > 0:
 			Qt.cuda()
-			Qt = nn.DataParallel(Qt)
-			Qt_t = nn.DataParallel(Qt_t)
+			Qt = nn.DataParallel(Qt).to(device0)
+			Qt_t = nn.DataParallel(Qt_t).to(device0)
 
 		qt_values = Qt.forward(x)
 		qt = qt_values.gather(1, actions.unsqueeze(1))
