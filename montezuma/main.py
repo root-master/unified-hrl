@@ -269,26 +269,22 @@ for t in range(max_frames):
 	if (t > LEARNING_STARTS and t % LEARNING_FREQ == 0):
 		states, subgoals, actions, rewards, state_primes, intrinsic_dones = \
 						experience_memory.sample_controller(batch_size=batch_size)
-		x = np.concatenate((states,subgoals),axis=1)	
+		x = np.concatenate((states,subgoals),axis=1)
+		x = torch.Tensor(x)	
 		xp = np.concatenate((state_primes,subgoals),axis=1)
-
+		xp = torch.Tensor(xp)
+		actions = torch.Tensor(actions).type(dlongtype)
+		rewards = torch.Tensor(rewards).type(dtype)
+		intrinsic_dones = torch.Tensor(intrinsic_dones).type(duinttype)
 		
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
 				x = torch.Tensor(x).to(device0).type(dtype)/255
 				xp = torch.Tensor(xp).to(device0).type(dtype)/255
-				actions = torch.Tensor(actions).to(device0).type(dlongtype)
-				rewards = torch.Tensor(rewards).to(device0).type(dtype)
-				intrinsic_dones = torch.Tensor(intrinsic_dones).type(duinttype)
-		else:
-			x = torch.Tensor(x).type(dtype) / 255
-			xp = torch.Tensor(x).type(dtype)/255
-			actions = torch.Tensor(actions).type(dlongtype)
-			rewards = torch.Tensor(rewards).type(dtype)
-			intrinsic_dones = torch.type(duinttype)
+				actions = actions.to(device0)
+				rewards = rewards.to(device0)
+				intrinsic_dones = intrinsic_dones.to(device0)
 	
-
-
 		if torch.cuda.device_count() > 0:
 			Qt.to(device0)
 			Qt_t = Qt_t.to(device0)
