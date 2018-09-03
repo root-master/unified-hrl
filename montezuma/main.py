@@ -282,9 +282,8 @@ for t in range(max_frames):
 			xp = torch.Tensor(x).type(dtype)/255
 
 		if torch.cuda.device_count() > 0:
-			Qt.cuda()
-			Qt = nn.DataParallel(Qt).to(device0)
-			Qt_t = nn.DataParallel(Qt_t).to(device0)
+			Qt.to(device0)
+			Qt_t = Qt_t.to(device0)
 
 		qt_values = Qt.forward(x)
 		qt = qt_values.gather(1, actions.unsqueeze(1))
