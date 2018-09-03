@@ -277,13 +277,17 @@ for t in range(max_frames):
 			with torch.cuda.device(0):
 				x = torch.Tensor(x).to(device0).type(dtype)/255
 				xp = torch.Tensor(xp).to(device0).type(dtype)/255
+				actions = torch.Tensor(actions).to(device0).type(dlongtype)
+				rewards = torch.Tensor(rewards).to(device0).type(dtype)
+				intrinsic_dones = torch.Tensor(intrinsic_dones).type(duinttype)
 		else:
 			x = torch.Tensor(x).type(dtype) / 255
 			xp = torch.Tensor(x).type(dtype)/255
+			actions = torch.Tensor(actions).type(dlongtype)
+			rewards = torch.Tensor(rewards).type(dtype)
+			intrinsic_dones = torch.type(duinttype)
+	
 
-		actions = torch.Tensor(actions)
-		rewards = torch.Tensor(rewards)
-		intrinsic_dones = torch.Tensor(intrinsic_dones)
 
 		if torch.cuda.device_count() > 0:
 			Qt.to(device0)
