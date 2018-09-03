@@ -32,8 +32,9 @@ num_param_updates = 0
 mean_episode_reward      = -float('nan')
 best_mean_episode_reward = -float('inf')
 LOG_EVERY_N_STEPS = 100
-SAVE_MODEL_EVERY_N_STEPS = 100000
+SAVE_MODEL_EVERY_N_STEPS = 1000000
 SUBGOAL_DISCOVERY_FREQ = REPLAY_BUFFER_SIZE // 10
+LOGGING_AND_SAVING = False
 
 def sample_from_random_subgoal_set(subgoal_set):
 	index = random.randint(0, len(subgoal_set)-1)
@@ -381,11 +382,3 @@ for t in range(max_frames):
 			sd.find_kmeans_clusters(init=C)
 			C = sd.cluster_centroids()
 			print('current discovered centroids: ', C)
-
-
-
-
-
-
-
-
