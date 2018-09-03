@@ -270,9 +270,7 @@ for t in range(max_frames):
 		states, subgoals, actions, rewards, state_primes, intrinsic_dones = \
 						experience_memory.sample_controller(batch_size=batch_size)
 		x = np.concatenate((states,subgoals),axis=1)	
-		x = torch.Tensor(x).type(dtype)/255
 		xp = np.concatenate((state_primes,subgoals),axis=1)
-		xp = torch.Tensor(xp).type(dtype)/255
 
 		actions = torch.Tensor(actions).type(dlongtype)
 		if torch.cuda.is_available():
