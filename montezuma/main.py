@@ -371,14 +371,15 @@ for t in range(max_frames):
 		if first_time_kmeans:
 			X = experience_memory.get_man_positions()
 			sd.feed_data(X)
-			C = sd.find_kmeans_clusters()
+			sd.find_kmeans_clusters()
+			C = sd.cluster_centroids()
 			print('current discovered centroids: ', C)
-			print(C)
 			first_time_kmeans = False
 		else:
 			X = experience_memory.get_man_positions()
 			sd.feed_data(X)
-			C = sd.find_kmeans_clusters(init=C)
+			sd.find_kmeans_clusters(init=C)
+			C = sd.cluster_centroids()
 			print('current discovered centroids: ', C)
 
 
