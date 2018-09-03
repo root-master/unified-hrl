@@ -272,7 +272,7 @@ for t in range(max_frames):
 		x = np.concatenate((states,subgoals),axis=1)	
 		xp = np.concatenate((state_primes,subgoals),axis=1)
 
-		actions = torch.Tensor(actions).type(dlongtype)
+		
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
 				x = torch.Tensor(x).to(device0).type(dtype)/255
@@ -280,6 +280,10 @@ for t in range(max_frames):
 		else:
 			x = torch.Tensor(x).type(dtype) / 255
 			xp = torch.Tensor(x).type(dtype)/255
+
+		actions = torch.Tensor(actions,dtype=torch.long)
+		rewards = torch.Tensor(rewards,dtype=torch.float)
+		intrinsic_dones = torch.Tensor(intrinsic_dones,dtype=torch.uint8)
 
 		if torch.cuda.device_count() > 0:
 			Qt.to(device0)
