@@ -210,7 +210,7 @@ firs_time = True
 num_param_updates = 0
 epsilon = 1
 first_time_kmeans = True
-for t in range(max_frames):
+for t in range(MAX_FRAMES):
 	x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
 	if t < LEARNING_STARTS:
 		a = env.action_space.sample()
