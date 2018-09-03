@@ -275,8 +275,8 @@ for t in range(max_frames):
 		actions = torch.Tensor(actions).type(dlongtype)
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
-				x = torch.Tensor(x).type(dtype).to(device0)/255
-				xp = torch.Tensor(xp).cuda().type(dtype).to(device0)/255
+				x = torch.Tensor(x).to(device0).type(dtype)/255
+				xp = torch.Tensor(xp).to(device0).type(dtype)/255
 		else:
 			x = torch.Tensor(x).type(dtype) / 255
 			xp = torch.Tensor(x).type(dtype)/255
