@@ -15,18 +15,26 @@ from logger import Logger
 logger = Logger('./logs')
 
 # Global Variables
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 TASK = 'MontezumaRevenge-v0'
+
+# MAX_FRAMES = 50000000
+MAX_FRAMES = 20000
+
+# REPLAY_BUFFER_SIZE = 1000000
 REPLAY_BUFFER_SIZE = 10000
+
 FRAME_HISTORY_LEN = 4
+#TARGET_UPDATE_FREQ = 10000
 TARGET_UPDATE_FREQ = 1000
+
 GAMMA = 0.99
 LEARNING_FREQ = 4
-LEARNING_RATE = 0.00025
 ALPHA = 0.95
 EPS = 0.01
-LEARNING_STARTS = 100
-MAX_FRAMES = 10000
+# LEARNING_STARTS = 50000
+LEARNING_STARTS = 500
+
 gamma = 0.99
 num_param_updates = 0
 mean_episode_reward      = -float('nan')
@@ -34,7 +42,13 @@ best_mean_episode_reward = -float('inf')
 LOG_EVERY_N_STEPS = 100
 SAVE_MODEL_EVERY_N_STEPS = 1000000
 SUBGOAL_DISCOVERY_FREQ = REPLAY_BUFFER_SIZE // 10
-LOGGING_AND_SAVING = False
+META_CONTROLLER_UPDATE_FREQ = 10000
+NOOP_MAX = 30 # no operation at the beggining of the game
+MAX_STEPS = 1000
+ALPHA = 0.95
+EPS = 0.01
+LEARNING_RATE = 0.00025
+
 
 def sample_from_random_subgoal_set(subgoal_set):
 	index = random.randint(0, len(subgoal_set)-1)
@@ -79,27 +93,12 @@ else:
 	batch_size = BATCH_SIZE
 
 # optimizer
-ALPHA = 0.95
-EPS = 0.01
-LEARNING_RATE = 0.00025
 optimizer = optim.RMSprop(Qt.parameters(),lr=LEARNING_RATE, alpha=ALPHA, eps=EPS)
 
 # training parameters
-action_repeat = 4
-batch_size = 32
-memory_size = 10000
-controller_update_freq = 4
-meta_contoller_update_freq = 1000
-noop_max = 30 # no operation at the beggining of the game
-skip_frame = 4
-max_frames = 50000000
-max_play_random = 50000
-max_steps = 1000
-alpha = 0.00025
 # Create environment
 import gym
 env = gym.make('MontezumaRevenge-v0')
-from gym import wrappers
 
 actions_meaning = env.unwrapped.get_action_meanings()
 
@@ -108,7 +107,7 @@ actions_meaning = env.unwrapped.get_action_meanings()
 
 def reset(noop_max=30):	
 	s = env.reset()
-	noop_random = random.randint(1, noop_max)
+	noop_random = random.randint(1, NOOP_MAX)
 	for _ in range(noop_random):
 		s,_,_,_ = env.step(0)
 	S,_, _, _ = step(0)
@@ -178,7 +177,7 @@ def epsilon_greedy(Q,epsilon=0.1):
 
 # create an Expereince Memory
 from memory import Experience, ExperienceMemory
-experience_memory = ExperienceMemory(size=memory_size)
+experience_memory = ExperienceMemory(size=REPLAY_BUFFER_SIZE)
 
 from subgoal_discovery import SubgoalDiscovery
 sd = SubgoalDiscovery()
@@ -227,6 +226,7 @@ for t in range(max_frames):
 	intrinsic_done_task = are_masks_align(man_mask, subgoal_mask)
 	# outlier 
 	if r > 0:
+		print('Outler detected at', man_loc)
 		outliers.append(man_loc)
 	R += r
 	
@@ -255,7 +255,7 @@ for t in range(max_frames):
 	s = sp
 	steps += 1
 
-	if terminal or (steps>max_steps):	
+	if terminal or (steps>MAX_STEPS):	
 		S = reset() # s is reserved for 4*84*84 input image
 		s = four_frames_to_4_84_84(S)
 		man_mask = get_man_mask(S)
