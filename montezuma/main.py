@@ -53,6 +53,11 @@ intrinsic_learning_task_done = are_masks_align(man_mask, random_subgoal_mask)
 
 # BUILD MODEL 
 USE_CUDA = torch.cuda.is_available()
+if torch.cuda.is_available():
+	device0 = torch.device("cuda:0")
+else:
+	device0 = torch.device("cpu")
+
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 dlongtype = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
 duinttype = torch.cuda.ByteTensor if torch.cuda.is_available() else torch.ByteTensor
@@ -266,17 +271,24 @@ for t in range(max_frames):
 						experience_memory.sample_controller(batch_size=batch_size)
 		x = np.concatenate((states,subgoals),axis=1)	
 		x = torch.Tensor(x).type(dtype)/255
+		xp = np.concatenate((state_primes,subgoals),axis=1)
+		xp = torch.Tensor(xp).type(dtype)/255
+
 		actions = torch.Tensor(actions).type(dlongtype)
+		if torch.cuda.is_available():
+			with torch.cuda.device(0):
+				x = torch.Tensor(x).type(dtype).to(device0)/255
+				xp = torch.Tensor(x).cuda().type(dtype).to(device0)/255
+
 		if torch.cuda.device_count() > 0:
 			Qt.cuda()
 			Qt = nn.DataParallel(Qt)
 			Qt_t = nn.DataParallel(Qt_t)
+
 		qt_values = Qt.forward(x)
 		qt = qt_values.gather(1, actions.unsqueeze(1))
 		qt = qt.squeeze()
-		xp = np.concatenate((state_primes,subgoals),axis=1)
-		xp = torch.Tensor(x).type(dtype)/255
-
+		
 		qt_p1 = Qt.forward(xp)
 		_, a_prime = qt_p1.max(1)
 
