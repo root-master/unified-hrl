@@ -275,7 +275,7 @@ for t in range(max_frames):
 		xp = torch.Tensor(xp)
 		actions = torch.Tensor(actions).type(dlongtype)
 		rewards = torch.Tensor(rewards).type(dtype)
-		intrinsic_dones = torch.Tensor(intrinsic_dones).type(duinttype)
+		intrinsic_dones = torch.Tensor(intrinsic_dones).type(dtype)
 		
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
@@ -297,14 +297,17 @@ for t in range(max_frames):
 		_, a_prime = qt_p1.max(1)
 
 		qt_t_p1 = Qt_t.forward(xp).detach()
-		qt_t_prime = qt_t_p1.gather(1, a_prime.unsqueeze(1))
-		qt_t_prime = qt_t_prime.squeeze()
+		qt_t_p1 = qt_t_p1.gather(1, a_prime.unsqueeze(1))
+		qt_t_p1 = qt_t_p1.squeeze()
 
-		qt_t = (1 - intrinsic_dones) * qt_t_prime
-		error = rewards + gamma * qt_t - qt
+		error = rewards + gamma * (1 - intrinsic_dones) * qt_t_p1 - qt
 		clipped_error = -1.0 * error.clamp(-1, 1)
+
+		optimizer.zero_grad()
+		qt.backward(clipped_error.data.unsqueeze(1))
 		optimizer.step()
 		num_param_updates += 1
+		
 		if num_param_updates % TARGET_UPDATE_FREQ == 0:
 			Qt_t.load_state_dict(Qt.state_dict())
 
