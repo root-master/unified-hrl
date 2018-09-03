@@ -267,6 +267,10 @@ for t in range(max_frames):
 		x = np.concatenate((states,subgoals),axis=1)	
 		x = torch.Tensor(x).type(dtype)/255
 		actions = torch.Tensor(actions).type(dlongtype)
+		if torch.cuda.device_count() > 0:
+			Qt.cuda()
+			Qt = nn.DataParallel(Qt)
+			Qt_t = nn.DataParallel(Qt_t)
 		qt_values = Qt.forward(x)
 		qt = qt_values.gather(1, actions.unsqueeze(1))
 		qt = qt.squeeze()
