@@ -2,6 +2,7 @@ import time
 import gym
 import numpy as np
 from copy import copy
+import random
 
 from Model import Model_1
 
@@ -9,7 +10,7 @@ from ExperienceReplayMemory import ExperienceReplayMemory
 
 from Model import Model_1, QTable
 # model = Model_1()
-q_table_is_used = False
+q_table_is_used = True
 
 if q_table_is_used:
 	model = QTable()
@@ -35,7 +36,7 @@ sd = SubgoalDiscovery(n_clusters=4)
 epsilon = 0.1
 gamma = 0.99
 if q_table_is_used:
-	lr = 0.0001
+	lr = 0.01
 else:
 	lr = 0.0001
 
@@ -52,18 +53,16 @@ subgoal_outliers = [] # outliers -- subgoals
 subgoals_centroids = [] # center of kmean clusters -- subgoals
 G = [] # all subgoals
 
-epsilon_g = 0.1 # probablity of a random subgoal vs greedy
+epsilon_g = 0.001 # probablity of a random subgoal vs greedy
 
 def test_intrinsic_motivation_learning():
 	global G
-	# print('testing')
 	s = env.reset()
 	s0 = copy(s)
-	# g = env.set_random_intrinsic_goal_from_states()
 	g = env.set_epsilon_greedy_type_subgoal(G, epsilon_g)
-	j = 0
 	Q = model.compute_Q(s, g)
 	a = Q.argmax()
+	j = 0
 	while j < max_steps:
 		sp, r, true_terminal, step_info = env.step(a)
 		r_intrinsic, terminal = env.get_intrinsic_reward(sp,g,r)
@@ -94,7 +93,8 @@ def test_intrinsic_motivation_learning():
 
 def test_original_task():
 	global G
-	# print('testing')
+	if VERBOSE:
+		print('testing original task')
 	s = env.reset()
 	s0 = copy(s)
 	# print('goal: key')
@@ -125,7 +125,8 @@ def test_original_task():
 		j += 1
 
 		if true_terminal:
-			print('testing task succesful!')
+			if VERBOSE:
+				print('testing original task succesful!')
 			return True
 			break
 
@@ -173,15 +174,20 @@ for i in range(max_episodes):
 	if i % FREQ_TEST == 0 and i != 0:
 		n_succesful_intrinsic_motivation_test = 0
 		for k in range(REPEAT_TEST):
+			if VERBOSE:
+				print('testing intrinsic motivation learnig: #', k)
 			test_intrinsic_motivation = test_intrinsic_motivation_learning()
 			if test_intrinsic_motivation:
 				n_succesful_intrinsic_motivation_test += 1
 		rate = n_succesful_intrinsic_motivation_test / REPEAT_TEST
 		success_rate_intrinsic_motivation_test.append(rate)
 
-
+	if VERBOSE:
+		print('-'*60)
+		print('episode: ', i)
 	s = env.reset()
 	s0 = copy(s)
+
 	g = env.set_epsilon_greedy_type_subgoal(G, epsilon_g)
 	Q = model.compute_Q(s, g)
 	a = model.epsilon_greedy(Q, epsilon)
@@ -196,7 +202,7 @@ for i in range(max_episodes):
 		total_steps += 1
 		experience = (s,a,r,sp)
 		memory.push(experience)
-		# Outlier
+		# Outlier -- one class SVM
 		if r > 1:
 			outlier = sp
 			if outlier not in subgoal_outliers:
@@ -234,9 +240,6 @@ for i in range(max_episodes):
 			j = 0
 			Q = model.compute_Q(s, g)
 			a = model.epsilon_greedy(Q, epsilon)
-
-
-		
 
 env.close()
 

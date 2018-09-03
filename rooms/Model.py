@@ -45,7 +45,7 @@ class Model_1():
 
 	def init_network(self):
 		nx = self.input_size
-		nh = 4096
+		nh = 1000
 		no = self.nA
 		self.nx = nx
 		self.nh = nh
@@ -184,7 +184,7 @@ class Model_2():
 
 	def init_network(self):
 		nx = self.input_size
-		nh = 10000
+		nh = 200
 		no = self.nA
 		self.nx = nx
 		self.nh = nh
@@ -206,10 +206,8 @@ class Model_2():
 		gy = g[1]
 		sx_vec = normpdf(self.x_vec, sx, 1)
 		sy_vec = normpdf(self.y_vec, sy, 1)
-		gx_vec = normpdf(self.x_vec, gx, 1)
-		gy_vec = normpdf(self.y_vec, gy, 1)
 
-		self.x = np.concatenate( (sx_vec, sy_vec, gx_vec, gy_vec), axis=1)
+		self.x = np.concatenate( (sx_vec, sy_vec), axis=1)
 
 		self.net = self.x @ self.w['ih_w'] + self.w['ih_b']
 		k = round(self.kwta_rate * self.nh) 

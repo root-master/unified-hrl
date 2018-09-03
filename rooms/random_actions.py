@@ -14,14 +14,15 @@ environment = 'Rooms-v0'
 env = gym.make(environment)
 RENDER = False
 
-max_steps = 64
-max_episodes = 10000
+max_steps = 200
+max_episodes = 100
 total_steps = 0
 memory_size = max_steps * max_episodes
 
 memory = ExperienceReplayMemory(memory_size=memory_size)
-from SubgoalDiscovery import SubgoalDiscovery
+from SubgoalDiscovery import SubgoalDiscovery, UnsupervisedOutlierDetection
 sd = SubgoalDiscovery(n_clusters=4)
+outlier_detector = UnsupervisedOutlierDetection()
 
 first_fit = False
 subgoal_outliers = [] # outliers -- subgoals
@@ -44,19 +45,36 @@ for i in range(max_episodes):
 	# 	sd.find_kmeans_clusters(init=centroids)
 	# 	centroids = sd.kmeans.cluster_centers_
 	# 	X = memory.X
+	
+	if i == 1:
+		outlier_detector.fit_data(memory.get_reward_np())
 
 	s = env.reset()
 	for j in range(max_steps):			
 		a = env.action_space.sample()
 		sp, r, terminal, step_info = env.step(a)
-		if r > 1:
-			outlier = sp
-			if outlier not in subgoal_outliers:
-				subgoal_outliers.append(outlier)
-				print('Outlier detected:', outlier)
-			if outlier not in G:
-				G.append(outlier)
-				print(G)
+
+		if i != 0:
+			if outlier_detector.detect_outlier(r):
+				outlier = sp
+				if outlier not in subgoal_outliers:
+					subgoal_outliers.append(outlier)
+					print('Outlier detected:', outlier)
+				if outlier not in G:
+					G.append(outlier)
+					print(G)
+				# pop the outlier out of data
+				memory.pop()
+
+
+		# if r > 1:
+		# 	outlier = sp
+		# 	if outlier not in subgoal_outliers:
+		# 		subgoal_outliers.append(outlier)
+		# 		print('Outlier detected:', outlier)
+		# 	if outlier not in G:
+		# 		G.append(outlier)
+		# 		print(G)
 
 		if i == 0 and RENDER:
 			env.render()
@@ -71,7 +89,7 @@ for i in range(max_episodes):
 
 env.close()
 
-
+memory.get_experience_X_np()
 sd.feed_data(memory.X)
 sd.find_kmeans_clusters(init='random')
 centroids_discrete = np.round_(sd.kmeans.cluster_centers_*16+0.5)
