@@ -314,9 +314,8 @@ for t in range(max_frames):
 		if t % LOG_EVERY_N_STEPS == 0:
 			for tag, value in Qt.named_parameters():
 				tag = tag.replace('.', '/')
-				logger.histo_summary(tag, value.data.numpy(), t+1)
-				if value.grad is not None:
-					logger.histo_summary(tag+'/grad', value.grad.numpy(), t+1)
+				logger.histo_summary(tag, value.data.cpu().numpy(), t+1)
+				logger.histo_summary(tag+'/grad', value.grad.cpu().numpy(), t+1)
 
 	if t % SAVE_MODEL_EVERY_N_STEPS == 0:
 		if not os.path.exists("models"):
