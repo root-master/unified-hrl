@@ -210,8 +210,8 @@ for t in range(max_frames):
 	if t < LEARNING_STARTS:
 		a = env.action_space.sample()
 	else:
-		qt = Qt.forward(torch.Tensor(x).type(dtype)/255)
-		a = epsilon_greedy(qt.cpu().numpy(),epsilon=epsilon) # random action
+		qt = Qt.forward(torch.Tensor(x).ty(pe(dtype)/255)
+		a = epsilon_greedy(qt.cpu().detach().numpy(),epsilon=epsilon) # random action
 	SP, r, terminal, step_info = step(a)
 	episode_rewards.append(r)
 	sp = four_frames_to_4_84_84(SP)
@@ -276,7 +276,7 @@ for t in range(max_frames):
 		qt_p1 = Qt.forward(xp)
 		_, a_prime = qt_p1.max(1)
 
-		qt_t_p1 = Qt_t.forward(xp).cpu()
+		qt_t_p1 = Qt_t.forward(xp).detach()
 		qt_t_prime = qt_t_p1.gather(1, a_prime.unsqueeze(1))
 		qt_t_prime = qt_t_prime.squeeze()
 
