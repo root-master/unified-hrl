@@ -31,7 +31,7 @@ GAMMA = 0.99
 LEARNING_FREQ = 4
 ALPHA = 0.95
 EPS = 0.01
-LEARNING_STARTS = 50000
+LEARNING_STARTS = 10000
 # LEARNING_STARTS = 100
 SAVE_RESULTS_N_STEP = 100000
 
@@ -313,7 +313,7 @@ for t in range(MAX_FRAMES):
 		# clipped_error = -1.0 * error.clamp(-1, 1)
 
 		# Compute Huber loss
-		loss = F.smooth_l1_loss(q_t, target)
+		loss = F.smooth_l1_loss(qt, target)
 		optimizer.zero_grad()
 		# qt.backward(clipped_error.data)
 		loss.backward()
