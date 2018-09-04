@@ -308,11 +308,19 @@ for t in range(MAX_FRAMES):
 		qt_t_p1 = qt_t_p1.gather(1, a_prime.unsqueeze(1))
 		qt_t_p1 = qt_t_p1.squeeze()
 
-		error = rewards + GAMMA * (1 - intrinsic_dones) * qt_t_p1 - qt
-		clipped_error = -1.0 * error.clamp(-1, 1)
+		# error = rewards + GAMMA * (1 - intrinsic_dones) * qt_t_p1 - qt
+		target = rewards + GAMMA * (1 - intrinsic_dones) * qt_t_p1
+		# clipped_error = -1.0 * error.clamp(-1, 1)
 
+		# Compute Huber loss
+    	loss = F.smooth_l1_loss(q_t, target)
 		optimizer.zero_grad()
-		qt.backward(clipped_error.data)
+		# qt.backward(clipped_error.data)
+		loss.backward()
+		
+		for param in Qt.parameters():
+        	param.grad.data.clamp_(-1, 1)
+		
 		optimizer.step()
 		num_param_updates += 1
 
