@@ -16,7 +16,7 @@ from logger import Logger
 logger = Logger('./logs')
 
 # Global Variables
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 TASK = 'MontezumaRevenge-v0'
 
 MAX_FRAMES = 50000000
@@ -33,16 +33,17 @@ ALPHA = 0.95
 EPS = 0.01
 LEARNING_STARTS = 50000
 # LEARNING_STARTS = 100
+SAVE_RESULTS_N_STEP = 100000
 
 num_param_updates = 0
 mean_episode_reward      = -float('nan')
 best_mean_episode_reward = -float('inf')
-LOG_EVERY_N_STEPS = 100
+LOG_EVERY_N_STEPS = 1000
 SAVE_MODEL_EVERY_N_STEPS = 1000000
 SUBGOAL_DISCOVERY_FREQ = REPLAY_BUFFER_SIZE // 20
 META_CONTROLLER_UPDATE_FREQ = 10000
 NOOP_MAX = 30 # no operation at the beggining of the game
-MAX_STEPS = 1000
+MAX_STEPS = 10000
 ALPHA = 0.95
 EPS = 0.01
 LEARNING_RATE = 0.00025
@@ -215,8 +216,6 @@ mean_reward_episodes_list = []
 best_reward_episodes_list = []
 episode_rewards_list = []
 
-
-
 for t in range(MAX_FRAMES):
 	x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
 	if t < LEARNING_STARTS:
@@ -230,7 +229,8 @@ for t in range(MAX_FRAMES):
 	xp = np.concatenate((sp,g),axis=0).reshape((1,5,84,84))	
 	man_mask = get_man_mask(SP)
 	man_loc = get_man_xy_np_coordinate(man_mask)
-	intrinsic_done_task = are_masks_align(man_mask, subgoal_mask)
+	# intrinsic_done_task = are_masks_align(man_mask, subgoal_mask)
+	intrinsic_done_task = is_man_inside_subgoal_mask(man_mask, subgoal_mask)
 	# outlier 
 	if r > 0:
 		print('Outler detected at', man_loc)
@@ -248,7 +248,7 @@ for t in range(MAX_FRAMES):
 		subgoal_frame = create_mask_frame(base_img,subgoal_mask)
 	else:
 		intrinsic_done = 0
-		tilde_r = -0.1
+		tilde_r = -1
 
 	if terminal and env.unwrapped.ale.lives() > 0:
 		done = 1
@@ -293,9 +293,9 @@ for t in range(MAX_FRAMES):
 				rewards = rewards.to(device0)
 				intrinsic_dones = intrinsic_dones.to(device0)
 	
-		if torch.cuda.device_count() > 0:
-			Qt.to(device0)
-			Qt_t = Qt_t.to(device0)
+		# if torch.cuda.device_count() > 0:
+		# 	Qt.to(device0)
+		# 	Qt_t = Qt_t.to(device0)
 
 		qt_values = Qt.forward(x)
 		qt = qt_values.gather(1, actions.unsqueeze(1))
@@ -350,10 +350,6 @@ for t in range(MAX_FRAMES):
 		best_reward_episodes_list.append(best_mean_episode_reward)
 		mean_reward_episodes_list.append(mean_episode_reward)
 		episode_rewards_list.append(sum(episode_rewards))
-		results_file_path = './results/pickle_results_t_'+ str(t) +'.pkl'
-		with open(results_file_path, 'wb') as f: 
-			pickle.dump([best_reward_episodes_list,mean_reward_episodes_list,episode_rewards_list], f)		
-
 		#============ TensorBoard logging ============#
 		# Log the scalar values
 		info = {
@@ -382,6 +378,12 @@ for t in range(MAX_FRAMES):
 
 			for tag, value in info.items():
 				logger.scalar_summary(tag, value, t+1)
+	
+	if t % SAVE_RESULTS_N_STEP==0 and t>0:
+		results_file_path = './results/performance_results_t_'+ str(t) +'.pkl'
+		with open(results_file_path, 'wb') as f: 
+			pickle.dump([best_reward_episodes_list, mean_reward_episodes_list,episode_rewards_list], f)		
+
 	if t % SUBGOAL_DISCOVERY_FREQ == 0 and t > 0:
 		if first_time_kmeans:
 			X = experience_memory.get_man_positions()
@@ -397,11 +399,8 @@ for t in range(MAX_FRAMES):
 		centroids.append(C)
 		results_file_path = './results/clustering_results_t_'+ str(t) +'.pkl'
 		with open(results_file_path, 'wb') as f: 
-			pickle.dump([C,sd.kmeans], f)		
-
+			pickle.dump([C,outliers], f)		
 		print('Current discovered centroids')
 		print(C)
-
-# saving learning paramters
 
 

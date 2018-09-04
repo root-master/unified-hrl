@@ -246,6 +246,25 @@ def are_masks_align(mask_1, mask_2,threshold=0.8):
 		overlap = False
 	return overlap
 
+def is_man_inside_subgoal_mask(mask_1, mask_2):
+	# 1 --> man, 2--> subgoal
+	xmin_1 = mask_1.x - mask_1.w // 2
+	ymin_1 = mask_1.y - mask_1.h // 2
+	xmax_1 = mask_1.x + mask_1.w // 2
+	ymax_1 = mask_1.y + mask_1.h // 2
+
+	xmin_2 = mask_2.x - mask_2.w // 2
+	ymin_2 = mask_2.y - mask_2.h // 2
+	xmax_2 = mask_2.x + mask_2.w // 2
+	ymax_2 = mask_2.y + mask_2.h // 2
+
+	x_man = mask_1.x
+	y_man = mask_1.y
+
+	if (xmin_2<x_man<xmax_2) and (ymin_2<y_man<ymax_2):
+		return True
+	else:
+		return False
 
 
 
