@@ -319,7 +319,7 @@ for t in range(MAX_FRAMES):
 		loss.backward()
 		
 		for param in Qt.parameters():
-        	param.grad.data.clamp_(-1, 1)
+			param.grad.data.clamp_(-1, 1)
 		
 		optimizer.step()
 		num_param_updates += 1
