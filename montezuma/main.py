@@ -313,7 +313,7 @@ for t in range(MAX_FRAMES):
 		# clipped_error = -1.0 * error.clamp(-1, 1)
 
 		# Compute Huber loss
-    	loss = F.smooth_l1_loss(q_t, target)
+		loss = F.smooth_l1_loss(q_t, target)
 		optimizer.zero_grad()
 		# qt.backward(clipped_error.data)
 		loss.backward()
