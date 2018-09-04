@@ -242,9 +242,12 @@ for t in range(MAX_FRAMES):
 	g_id = subgoal_index
 		
 	if intrinsic_done_task:
+		print('succesful intrinsic motivation learning to g in ',\
+									 (subgoal_mask.x,subgoal_mask.y) )
 		intrinsic_done = 1
 		tilde_r = +1
-		subgoal_index, subgoal_mask = sample_from_random_subgoal_set(random_subgoals_set)
+		subgoal_index, subgoal_mask = \
+			sample_from_random_subgoal_set(random_subgoals_set)
 		subgoal_frame = create_mask_frame(base_img,subgoal_mask)
 	else:
 		intrinsic_done = 0
