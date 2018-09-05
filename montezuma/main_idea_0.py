@@ -254,7 +254,7 @@ for i in range(len(random_subgoals_set)):
 	subgoal_success_test[i] = 0
 
 def test_task():
-	S = test_reset()
+	S = reset_test_env()
 	s = four_frames_to_4_84_84(S)
 	man_mask = get_man_mask(S)
 	man_loc = get_man_xy_np_coordinate(man_mask)
@@ -305,7 +305,7 @@ def test_task():
 			k += 1
 
 			if terminal:
-				S = test_reset() # s is reserved for 4*84*84 input image
+				S = reset_test_env() # s is reserved for 4*84*84 input image
 				s = four_frames_to_4_84_84(S)
 
 		if r>0 and intrinsic_done_task:
