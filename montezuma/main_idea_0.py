@@ -254,7 +254,7 @@ for i in range(len(random_subgoals_set)):
 	subgoal_success_test[i] = 0
 
 def test_task():
-	S = reset()
+	S = test_reset()
 	s = four_frames_to_4_84_84(S)
 	man_mask = get_man_mask(S)
 	man_loc = get_man_xy_np_coordinate(man_mask)
