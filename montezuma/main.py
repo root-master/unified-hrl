@@ -258,7 +258,7 @@ for t in range(MAX_FRAMES):
 	else:
 		done = 0
 
-	experience = Experience(s, g, g_id, a, r, sp, intrinsic_done, done, man_loc)
+	experience = Experience(s, g, g_id, a, r, tilde_r, sp, intrinsic_done, done, man_loc)
 	experience_memory.push(experience)
 
 	epsilon = max(0.1, 1-(1-0.1)*t/1000000 )
