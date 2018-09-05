@@ -44,6 +44,7 @@ SUBGOAL_DISCOVERY_FREQ = REPLAY_BUFFER_SIZE // 20
 META_CONTROLLER_UPDATE_FREQ = 10000
 NOOP_MAX = 30 # no operation at the beggining of the game
 MAX_STEPS = 1000
+MAX_STEPS_TEST = 250
 ALPHA = 0.95
 EPS = 0.01
 LEARNING_RATE = 0.00025
@@ -258,7 +259,7 @@ def test_task():
 	s = four_frames_to_4_84_84(S)
 	man_mask = get_man_mask(S)
 	man_loc = get_man_xy_np_coordinate(man_mask)
-
+	success_test = 0
 	test_episode_frames = []
 	test_episode_total_rewards = 0
 
@@ -273,7 +274,7 @@ def test_task():
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
 		x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
 		k = 0
-		while(k < MAX_STEPS):
+		while(k < MAX_STEPS_TEST):
 			qt = Qt.forward(torch.Tensor(x).type(dtype)/255)
 			a = epsilon_greedy(qt.cpu().detach().numpy(),epsilon=0) # random action
 			SP, r, terminal, step_info = test_step(a)
@@ -311,7 +312,7 @@ def test_task():
 		if r>0 and intrinsic_done_task:
 			success_test = 1	
 
-	return test_episode_frames, subgoal_success_test , success_test
+	return test_episode_frames, subgoal_success_test ,success_test, test_episode_total_rewards
 
 for t in range(MAX_FRAMES):
 	x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
@@ -513,10 +514,10 @@ for t in range(MAX_FRAMES):
 		print(C)
 
 	if t % TEST_FREQ == 0 and t>0:
-		test_episode_frames, subgoal_success , success_test = test_task()
+		test_episode_frames, subgoal_success_test ,success_test, test_episode_total_rewards = test_task()
 		results_file_path = './results/test_results_t_'+ str(t) +'.pkl'
 		with open(results_file_path, 'wb') as f: 
-			pickle.dump([test_episode_frames,subgoal_success,success_test], f)		
+			pickle.dump([test_episode_frames, subgoal_success_test ,success_test, test_episode_total_rewards], f)		
 
 
 
