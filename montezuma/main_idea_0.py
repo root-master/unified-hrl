@@ -310,7 +310,7 @@ def test_task():
 		if r>0 and intrinsic_done_task:
 			success_test = 1	
 
-	return test_episode_frames, subgoal_success , success_test
+	return test_episode_frames, subgoal_success_test , success_test
 
 for t in range(MAX_FRAMES):
 	x = np.concatenate((s,g),axis=0).reshape((1,5,84,84))
