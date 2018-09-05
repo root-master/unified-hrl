@@ -249,7 +249,7 @@ mean_reward_episodes_list = []
 best_reward_episodes_list = []
 episode_rewards_list = []
 good_test_states = []
-subgoal_success = {}
+subgoal_success_test = {}
 for i in range(len(random_subgoals_set)):
 	subgoal_success_test[i] = 0
 
