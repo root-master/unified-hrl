@@ -306,6 +306,7 @@ def test_task():
 			if terminal:
 				S = reset_test_env() # s is reserved for 4*84*84 input image
 				s = four_frames_to_4_84_84(S)
+				break
 
 		if r>0 and intrinsic_done_task:
 			success_test = 1	
