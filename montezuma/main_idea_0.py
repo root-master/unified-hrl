@@ -277,7 +277,6 @@ def test_task():
 			qt = Qt.forward(torch.Tensor(x).type(dtype)/255)
 			a = epsilon_greedy(qt.cpu().detach().numpy(),epsilon=0) # random action
 			SP, r, terminal, step_info = test_step(a)
-			test_episode_rewards.append(r)
 			test_episode_frames = S[3]
 			sp = four_frames_to_4_84_84(SP)
 			xp = np.concatenate((sp,g),axis=0).reshape((1,5,84,84))	
