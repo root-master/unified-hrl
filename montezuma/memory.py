@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 from collections import namedtuple
-Experience = namedtuple('Experience', 's g g_id a r sp intrinsic_done terminal man_loc')
+Experience = namedtuple('Experience', 's g g_id a r tilde_r sp intrinsic_done terminal man_loc')
 
 class ExperienceMemory():
 	def __init__(self, size=100000):
@@ -32,7 +32,7 @@ class ExperienceMemory():
 			states[i,:,:,:] = e.s
 			subgoals[i,:,:,:] = e.g
 			actions[i] = e.a
-			rewards[i] = e.r
+			rewards[i] = e.tilde_r
 			state_primes[i] = e.sp
 			intrinsic_dones[i] = e.intrinsic_done 
 			self.indecies.append(j)

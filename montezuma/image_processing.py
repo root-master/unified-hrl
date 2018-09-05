@@ -5,6 +5,7 @@ import numpy as np
 import copy
 import sys
 import random
+import math
 
 from collections import namedtuple
 Mask = namedtuple('Mask', 'x y w h')
@@ -169,17 +170,11 @@ def create_mask(p,w,h):
 
 def create_random_subgoal_set_from_objects(coords):
 	subgoal_set = []
-	obj = 'key'
+	obj = 'ladder' # bottum  ladder
 	loc = coords[obj]
 	w = coords[obj+'_w']
 	h = coords[obj+'_h']
-	p = ( np.asscalar(loc[0])+w//2 , np.asscalar(loc[1])+h//2 )
-	subgoal_mask = create_mask(p,2*w,h)
-	subgoal_set.append(subgoal_mask)
-	obj = 'ladder'
-	loc = coords[obj]
-	w = coords[obj+'_w']
-	h = coords[obj+'_h']
+
 	for loc in zip(*coords[obj][::-1]):
 		p = ( loc[1]+w//2, loc[0]-h//4 ) # top
 		subgoal_mask = create_mask(p,w,h//2)
@@ -187,9 +182,18 @@ def create_random_subgoal_set_from_objects(coords):
 		p = ( loc[1]+w//2, loc[0]+h//4 ) # middle
 		subgoal_mask = create_mask(p,w,h//2)
 		subgoal_set.append(subgoal_mask)
-		p = ( loc[1]+w//2, loc[0]+3*h//4 ) # middle
+		p = ( loc[1]+w//2, loc[0]+3*h//4 ) # bottom
 		subgoal_mask = create_mask(p,w,h//2)
 		subgoal_set.append(subgoal_mask)
+
+
+	obj = 'key'
+	loc = coords[obj]
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']
+	p = ( np.asscalar(loc[0])+w//2 , np.asscalar(loc[1])+h//2 )
+	subgoal_mask = create_mask(p,2*w,h)
+	subgoal_set.append(subgoal_mask)
 	obj = 'rope'
 	loc = coords[obj]
 	w = coords[obj+'_w']
@@ -207,6 +211,51 @@ def create_random_subgoal_set_from_objects(coords):
 		subgoal_mask = create_mask(p,w,h//2)
 		subgoal_set.append(subgoal_mask)	
 	return subgoal_set
+
+def create_good_subgoal_set_from_objects(coords):
+	subgoal_set = []
+	obj = 'ladder'
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']
+	loc = (128, 135) # right ladder
+	p = ( loc[0]+w//2, loc[1]+h//4 )
+	subgoal_mask = create_mask(p,w,h//2)
+	subgoal_set.append(subgoal_mask)
+
+	obj = 'ladder'
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']
+	loc = (16,135) # left ladder
+	p = ( loc[0]+w//2, loc[1]+h//4 )
+	subgoal_mask = create_mask(p,w,h//2)
+	subgoal_set.append(subgoal_mask)
+
+	obj = 'key'
+	loc = coords[obj]
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']
+	p = ( np.asscalar(loc[0])+w//2 , np.asscalar(loc[1])+h//2 )
+	subgoal_mask = create_mask(p,2*w,h)
+	subgoal_set.append(subgoal_mask)
+
+	obj = 'door'
+	loc = (16,44) # top left door
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']	
+	p = ( loc[0]+w//2, loc[1]+3*h//4 )
+	subgoal_mask = create_mask(p,w,h//2)
+	subgoal_set.append(subgoal_mask)	
+
+	obj = 'door'
+	loc = (132,44) # top right door
+	w = coords[obj+'_w']
+	h = coords[obj+'_h']	
+	p = ( loc[0]+w//2, loc[1]+3*h//4 )
+	subgoal_mask = create_mask(p,w,h//2)
+	subgoal_set.append(subgoal_mask)
+	
+	return subgoal_set
+
 
 def create_random_subgoal_set_from_edges(img,coords):
 	'''TODO'''
@@ -246,27 +295,39 @@ def are_masks_align(mask_1, mask_2,threshold=0.8):
 		overlap = False
 	return overlap
 
+# def is_man_inside_subgoal_mask(mask_1, mask_2):
+# 	# 1 --> man, 2--> subgoal
+# 	xmin_1 = mask_1.x - mask_1.w // 2
+# 	ymin_1 = mask_1.y - mask_1.h // 2
+# 	xmax_1 = mask_1.x + mask_1.w // 2
+# 	ymax_1 = mask_1.y + mask_1.h // 2
+
+# 	xmin_2 = mask_2.x - mask_2.w // 2
+# 	ymin_2 = mask_2.y - mask_2.h // 2
+# 	xmax_2 = mask_2.x + mask_2.w // 2
+# 	ymax_2 = mask_2.y + mask_2.h // 2
+
+# 	x_man = mask_1.x
+# 	y_man = mask_1.y
+
+# 	if (xmin_2<x_man<xmax_2) and (ymin_2<y_man<ymax_2):
+# 		return True
+# 	else:
+# 		return False
+
+
 def is_man_inside_subgoal_mask(mask_1, mask_2):
 	# 1 --> man, 2--> subgoal
-	xmin_1 = mask_1.x - mask_1.w // 2
-	ymin_1 = mask_1.y - mask_1.h // 2
-	xmax_1 = mask_1.x + mask_1.w // 2
-	ymax_1 = mask_1.y + mask_1.h // 2
-
-	xmin_2 = mask_2.x - mask_2.w // 2
-	ymin_2 = mask_2.y - mask_2.h // 2
-	xmax_2 = mask_2.x + mask_2.w // 2
-	ymax_2 = mask_2.y + mask_2.h // 2
+	x_subgoal = mask_2.x
+	y_subgoal = mask_2.y
 
 	x_man = mask_1.x
 	y_man = mask_1.y
 
-	if (xmin_2<x_man<xmax_2) and (ymin_2<y_man<ymax_2):
+	if ( (x_man - x_subgoal )**2 + (y_man - y_subgoal)**2 <= 64 ):
 		return True
 	else:
 		return False
-
-
 
 
 
