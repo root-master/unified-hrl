@@ -33,8 +33,7 @@ GAMMA = 0.99
 LEARNING_FREQ = 4
 ALPHA = 0.95
 EPS = 0.01
-LEARNING_STARTS = 100
-# LEARNING_STARTS = 100
+LEARNING_STARTS = 1000
 SAVE_RESULTS_N_STEP = 100000
 
 num_param_updates = 0
@@ -45,7 +44,7 @@ SAVE_MODEL_EVERY_N_STEPS = 1000000
 SUBGOAL_DISCOVERY_FREQ = REPLAY_BUFFER_SIZE // 20
 META_CONTROLLER_UPDATE_FREQ = 10000
 NOOP_MAX = 30 # no operation at the beggining of the game
-MAX_STEPS = 10000
+MAX_STEPS = 5000
 ALPHA = 0.95
 EPS = 0.01
 LEARNING_RATE = 0.00025
@@ -189,8 +188,8 @@ S = reset()
 s = four_frames_to_4_84_84(S)
 man_mask = rec.get_man_mask(S)
 man_loc = get_man_xy_np_coordinate(man_mask)
-subgoal_index, subgoal_mask = sample_from_random_subgoal_set(random_subgoals_set) # random g
-subgoal_frame = create_mask_frame(base_img,subgoal_mask)
+subgoal_index, subgoal_mask = rec.sample_from_random_subgoal_set() # random g
+subgoal_frame = rec.create_mask_frame(subgoal_mask)
 g = single_channel_frame_to_1_84_84(subgoal_frame)
 steps = 0
 R = 0 # return
@@ -242,8 +241,8 @@ for t in range(MAX_FRAMES):
 		intrinsic_done = 1
 		tilde_r = +1
 		subgoal_index, subgoal_mask = \
-			sample_from_random_subgoal_set(random_subgoals_set)
-		subgoal_frame = create_mask_frame(base_img,subgoal_mask)
+			rec.sample_from_random_subgoal_set()
+		subgoal_frame = rec.create_mask_frame(subgoal_mask)
 	else:
 		intrinsic_done = 0
 		tilde_r = -0.1
@@ -269,8 +268,8 @@ for t in range(MAX_FRAMES):
 		s = four_frames_to_4_84_84(S)
 		man_mask = rec.get_man_mask(S)
 		man_loc = get_man_xy_np_coordinate(man_mask)
-		subgoal_index, subgoal_mask = sample_from_random_subgoal_set(random_subgoals_set) # random g
-		subgoal_frame = create_mask_frame(base_img,subgoal_mask)
+		subgoal_index, subgoal_mask = rec.sample_from_random_subgoal_set() # random g
+		subgoal_frame = rec.create_mask_frame(subgoal_mask)
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
 		steps = 0
 		R = 0

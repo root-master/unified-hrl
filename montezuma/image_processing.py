@@ -97,7 +97,7 @@ class Recognizer:
 		return img
 
 	def get_man_mask(self,frames=None):
-		if frames in None:
+		if frames is None:
 			p, w, h = self.blob_detect(self.base_img,'man')
 		else:
 			s_max = np.max(np.stack(frames), axis=0)
