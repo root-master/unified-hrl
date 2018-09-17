@@ -212,8 +212,9 @@ for t in range(MAX_FRAMES):
 	if t < LEARNING_STARTS:
 		a = env.action_space.sample()
 	else:
-		qt = Qt.forward(torch.Tensor(x).type(dtype)/255)
-		a = epsilon_greedy(qt.cpu().detach().numpy(),epsilon=epsilon) # random action
+		with torch.device('cpu'):
+			qt = Qt.forward(torch.Tensor(x)/255)
+			a = epsilon_greedy(qt.numpy(),epsilon=epsilon) # random action
 	old_lives = env.unwrapped.ale.lives()
 	SP, r, terminal, step_info = step(a)
 	new_lives = env.unwrapped.ale.lives()
@@ -258,7 +259,7 @@ for t in range(MAX_FRAMES):
 	experience = Experience(s, g, g_id, a, r, tilde_r, sp, intrinsic_done, done, man_loc)
 	experience_memory.push(experience)
 
-	epsilon = max(0.1, 0.2-(1-0.1)*t/1000000 )
+	epsilon = max(0.1, 1-(1-0.1)*t/1000000 )
 	s = deepcopy(sp)
 	steps += 1
 
