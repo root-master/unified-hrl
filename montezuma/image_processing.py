@@ -141,7 +141,7 @@ class Recognizer:
 	def sample_from_random_subgoal_set(self):
 		random_subgoal_set = self.random_subgoals_set
 		index = random.randint(0, len(random_subgoal_set)-1)
-		return index, subgoal_set[index]
+		return index, random_subgoal_set[index]
 
 	def create_mask_frame(self,mask):
 		img = self.base_img
