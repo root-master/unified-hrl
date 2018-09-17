@@ -138,7 +138,7 @@ class Recognizer:
 			subgoal_set.append(subgoal_mask)			
 		return subgoal_set
 
-	def sample_from_subgoal_set(self):
+	def sample_from_random_subgoal_set(self):
 		random_subgoal_set = self.random_subgoals_set
 		index = random.randint(0, len(random_subgoal_set)-1)
 		return index, subgoal_set[index]
