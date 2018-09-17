@@ -5,7 +5,7 @@ with open(results_file_path, 'rb') as f:
 	results = pickle.load(f)
 
 import pickle
-results_file_path ='./results/pickle_results_t_302800.pkl'
+results_file_path ='./results/pickle_results_t_150000.pkl'
 with open(results_file_path, 'rb') as f: 
 	results = pickle.load(f)
 
