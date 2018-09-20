@@ -7,7 +7,7 @@ class SubgoalDiscovery():
 		self.n_clusters = n_clusters
 		self.outliers = []
 		self.centroid_memory= [] # all the centroids over time of learning
-		self.centroids_list = [] # list of recent centroids
+		self.centroid_subgoals = [] # list of recent centroids
 		self.G = [] # recent list of all subgoals
 		self.C = None # Kmeans centroids in numpy arrays rounded
 
@@ -25,8 +25,8 @@ class SubgoalDiscovery():
 		self.kmeans.fit(self.X)
 		self.C = self.cluster_centroids()
 		self.centroid_memory.append(self.C)		
-		self.centroids_list = [ tuple(g) for g in list(self.C) ]
-		self.G = self.centroids_list + self.outliers
+		self.centroid_subgoals = [ tuple(g) for g in list(self.C) ]
+		self.G = self.centroid_subgoals + self.outliers
 
 	def cluster_centroids(self):
 		return np.round_(self.kmeans.cluster_centers_)
