@@ -1,6 +1,8 @@
 from sklearn.cluster import KMeans
 from sklearn import svm
 import numpy as np
+import os
+import pickle 
 
 class SubgoalDiscovery():
 	def __init__(self,n_clusters=10,**kargs):
@@ -45,6 +47,12 @@ class SubgoalDiscovery():
 			self.G = self.centroid_subgoals + self.outliers
 		else:
 			print('discovered outlier already in the outliers list')
+
+	def save_results(self,results_file_path='./results/subgoals.pkl'):
+		if not os.path.exists("results"):
+			os.makedirs("results")
+		with open(results_file_path, 'wb') as f: 
+			pickle.dump([self.centroid_subgoals,self.outliers], f)
 
 class UnsupervisedOutlierDetection():
 	def __init__(self,kernel='rbf'):

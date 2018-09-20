@@ -39,6 +39,7 @@ class IntrinsicMotivation():
 		self.epsilon = self.epsilon_start
 		self.epsilon_annealing_steps = 1000000
 		self.repeat_noop_action = 0
+		self.save_results_freq = 100000
 
 		self.__dict__.update(kwargs) # updating input kwargs params 
 
@@ -172,6 +173,8 @@ class IntrinsicMotivation():
 				X = self.experience_memory.get_man_positions()
 				self.subgoal_discory.feed_data(X)
 				self.subgoal_discory.find_kmeans_clusters()
+				results_file_path = './results/subgoal_discovery_step_' + str(t) + '.pkl'
+				self.subgoal_discory.save_results(results_file_path=results_file_path)
 
 			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
 				self.test()
@@ -180,6 +183,11 @@ class IntrinsicMotivation():
 				model_save_path = './models/controller_step_' + str(t) + '.model'
 				self.controller.save_model(model_save_path)
 				print('saving model, steps = ', t)
+
+			if (t>0) and (t % self.save_results_freq == 0):
+				results_file_path = './results/performance_results_' + str(t) + '.pkl'
+				with open(results_file_path, 'wb') as f: 
+					pickle.dump([self.episode_scores_list,self.episode_rewards_list,self.testing_scores], f)
 			
 	def test(self):
 		self.total_score_testing = 0
@@ -276,7 +284,6 @@ class IntrinsicMotivation():
 			return self.env.action_space.sample()
 		else:
 			return self.controller.get_best_action(s,g)
-
 
 class MetaControllerController():
 	def __init__(self,
