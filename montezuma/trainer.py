@@ -160,20 +160,21 @@ class IntrinsicMotivation():
 				subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask) #subgoal frame
 				g = single_channel_frame_to_1_84_84(subgoal_frame)
 
-			if t>self.learning_starts and t % self.learning_freq == 0:
+			if (t>self.learning_starts) and (t % self.learning_freq == 0):
 				self.controller.update_w()				
 
-			if t>0 and t % self.subgoal_discovery_freq==0: # find centroids
+			if (t>0) and (t % self.subgoal_discovery_freq==0): # find centroids
 				X = self.experience_memory.get_man_positions()
 				self.subgoal_discory.feed_data(X)
 				self.subgoal_discory.find_kmeans_clusters()
 
-			if t>0 and t % self.test_freq == 0: # test controller's performance
+			if (t>0) and (t % self.test_freq == 0): # test controller's performance
 				self.test()
 
-			if t>0 and t % self.save_model_freq == 0: # save controller model
+			if (t>0) and (t % self.save_model_freq == 0): # save controller model
 				model_save_path = './models/controller_step_' + str(t) + '.model'
 				self.controller.save_model(model_save_path)
+				print('saving model, steps = ', t)
 			
 	def test(self):
 		self.total_score_testing = 0
