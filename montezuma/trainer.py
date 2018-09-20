@@ -77,7 +77,7 @@ class IntrinsicMotivation():
 		subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
 
-		for t in range(self.max_iter):
+		for t in range(self.max_iter+1):
 			self.step = t
 			if t < self.learning_starts:
 				a = self.env.action_space.sample()
