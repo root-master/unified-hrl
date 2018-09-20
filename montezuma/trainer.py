@@ -25,7 +25,7 @@ class IntrinsicMotivation():
 		self.testing_env = Environment(task=self.env.task) # testing environment
 		self.testing_scores = [] # record testing scores
 		self.epsilon_testing = 0.05
-		self.max_steps_testing = 5000
+		self.max_steps_testing = 10000
 		# parameters
 		self.max_iter = 2500000
 		self.controller_target_update_freq = 10000
@@ -49,9 +49,10 @@ class IntrinsicMotivation():
 
 		# learning variables
 		self.episode_rewards = 0.0 # including step cost 
-
+		self.episode_scores = 0.0
 		# keeping records of the performance
 		self.episode_rewards_list = []
+		self.episode_scores_list = []
 
 		print('init: Intrinsic Motivation Trainer --> OK')
 
@@ -87,7 +88,7 @@ class IntrinsicMotivation():
 			old_lives = self.env.lives()
 			SP, r, terminal, step_info = self.env.step(a)
 			new_lives = self.env.lives()
-			self.episode_rewards += r	
+			self.epsiode_scores += r	
 			sp = four_frames_to_4_84_84(SP)
 			man_mask = self.image_processor.get_man_mask(SP)
 			man_loc = get_man_xy_np_coordinate(man_mask)
@@ -97,7 +98,6 @@ class IntrinsicMotivation():
 			if r > 0:
 				print('############# found an outlier ###############')
 				self.subgoal_discory.push_outlier(man_loc)
-				self.epsiode_scores += r
 			else:
 				r = -0.1 # small negative reward
 
@@ -127,6 +127,8 @@ class IntrinsicMotivation():
 				print('agent terminated, end of episode') 
 				r = -10.0
 
+			self.episode_rewards += r # including negative rewards for death
+
 			r = np.clip(r, -1.0, 1.0)
 			experience = Experience(s, g, g_id, a, r, r_tilde, sp, intrinsic_done, done, man_loc)
 			self.experience_memory.push(experience)
@@ -146,9 +148,11 @@ class IntrinsicMotivation():
 				s = four_frames_to_4_84_84(S)
 
 			if terminal or task_done:
+				self.episode_scores_list.append(self.epsiode_scores)
+				self.episode_rewards_list.append(self.episode_rewards)
 				self.game_episode += 1
 				self.episode_rewards = 0.0
-				self.episode_rewards_list.append(self.episode_rewards)
+				self.epsiode_scores = 0.0				
 				print('-'*60)
 				print('game epsiode: ', self.game_episode)
 				print('time step: ', self.step)
