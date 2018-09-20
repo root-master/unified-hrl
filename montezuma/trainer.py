@@ -95,7 +95,8 @@ class IntrinsicMotivation():
 			
 			# outlier for the subgoal discovery
 			if r > 0:
-				self.subgoal_discory.push(man_loc)
+				print('############# found an outlier ###############')
+				self.subgoal_discory.push_outlier(man_loc)
 				self.epsiode_scores += r
 			else:
 				r = -0.1 # small negative reward
@@ -168,7 +169,7 @@ class IntrinsicMotivation():
 				self.subgoal_discory.feed_data(X)
 				self.subgoal_discory.find_kmeans_clusters()
 
-			if (t>0) and (t % self.test_freq == 0): # test controller's performance
+			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
 				self.test()
 
 			if (t>0) and (t % self.save_model_freq == 0): # save controller model
@@ -222,7 +223,8 @@ class IntrinsicMotivation():
 			
 			# outlier for the subgoal discovery
 			if r > 0:
-				self.subgoal_discory.push(man_loc)
+				print('############# found an outlier - test time ###############')
+				self.subgoal_discory.push_outlier(man_loc)
 				self.epsiode_scores += r
 			
 			if new_lives < old_lives:
@@ -247,7 +249,7 @@ class IntrinsicMotivation():
 			s = copy.deepcopy(sp)
 			self.S_test = SP
 
-			if (new_lives < old_lives) and not terminal:
+			if (new_lives < old_lives) and not terminal and self.repeat_noop_action > 0:
 				for _ in range(self.repeat_noop_action): # do 40 nothing actions to ignore post-death
 					S,_,_,_ = self.env.step(0)
 				self.S_test = S
