@@ -6,7 +6,6 @@ import copy
 import sys
 import random
 import math
-
 from collections import namedtuple
 Mask = namedtuple('Mask', 'x y w h')
 
@@ -287,6 +286,38 @@ def is_man_inside_subgoal_mask(mask_1, mask_2):
 		return True
 	else:
 		return False
+
+def get_man_xy_np_coordinate(man_mask):
+	x = man_mask.x + man_mask.w//2
+	y = man_mask.y + man_mask.h//2
+	return np.array([x,y])
+
+def four_frames_to_4_84_84(S):
+	""" 0) Atari frames: 210 x 160
+		1) Get image grayscale
+		2) Rescale image 110 x 84
+		3) Crop center 84 x 84 (you can crop top/bottom according to the game)
+		"""
+	for i, img in enumerate(S):
+		gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+		h, w = 110, 84
+		gray_resized = cv2.resize(gray,(w,h))
+		gray_cropped = gray_resized[13:110-13,:]
+		gray_reshaped = gray_cropped.reshape((1,84,84))
+		if i == 0:
+			s = gray_reshaped
+		else:
+			s = np.concatenate((s,gray_reshaped),axis=0)
+	return s
+
+def single_channel_frame_to_1_84_84(subgoal_frame):
+	reshaped = subgoal_frame.reshape((210,160))
+	resized =  cv2.resize(reshaped,(84,110))
+	cropped = resized[13:110-13,:]
+	g = cropped.reshape((1,84,84))
+	return g
+
+
 
 
 

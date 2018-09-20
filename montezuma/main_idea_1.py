@@ -130,8 +130,8 @@ def step(a,repeat_action=4):
 # 	return man_mask
 
 def get_man_xy_np_coordinate(man_mask):
-	x = man_mask.x
-	y = man_mask.y
+	x = man_mask.x + man_mask.w//2
+	y = man_mask.y + man_mask.h//2
 	return np.array([x,y])
 
 def four_frames_to_4_84_84(S):
@@ -212,9 +212,8 @@ for t in range(MAX_FRAMES):
 	if t < LEARNING_STARTS:
 		a = env.action_space.sample()
 	else:
-		with torch.device('cpu'):
-			qt = Qt.forward(torch.Tensor(x)/255)
-			a = epsilon_greedy(qt.numpy(),epsilon=epsilon) # random action
+		qt = Qt.forward(torch.Tensor(x).type(dtype)/255.0)
+		a = epsilon_greedy(qt.cpu().detach().numpy(),epsilon=epsilon) # random action
 	old_lives = env.unwrapped.ale.lives()
 	SP, r, terminal, step_info = step(a)
 	new_lives = env.unwrapped.ale.lives()
@@ -277,19 +276,19 @@ for t in range(MAX_FRAMES):
 
 	if (t > LEARNING_STARTS and t % LEARNING_FREQ == 0):
 		states, subgoals, actions, rewards, state_primes, intrinsic_dones = \
-						experience_memory.sample_controller(batch_size=batch_size)
+					experience_memory.sample_controller(batch_size=batch_size)
 		x = np.concatenate((states,subgoals),axis=1)
 		x = torch.Tensor(x)	
 		xp = np.concatenate((state_primes,subgoals),axis=1)
 		xp = torch.Tensor(xp)
-		actions = torch.Tensor(actions).type(dlongtype)
+		actions = torch.Tensor(actions).type(duinttype)
 		rewards = torch.Tensor(rewards).type(dtype)
 		intrinsic_dones = torch.Tensor(intrinsic_dones).type(dtype)
 		
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
-				x = torch.Tensor(x).to(device0).type(dtype)/255
-				xp = torch.Tensor(xp).to(device0).type(dtype)/255
+				x = torch.Tensor(x).to(device0).type(dtype)/255.0
+				xp = torch.Tensor(xp).to(device0).type(dtype)/255.0
 				actions = actions.to(device0)
 				rewards = rewards.to(device0)
 				intrinsic_dones = intrinsic_dones.to(device0)

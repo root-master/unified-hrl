@@ -1,19 +1,26 @@
 import gym 
+import time
 
-environment = 'MontezumaRevenge-v0'
+
+environment = 'MontezumaRevengeNoFrameskip-v0'
 env = gym.make(environment)
+actions_meaning = env.unwrapped.get_action_meanings()
 
-env.reset()
+game_score = 0.0
 env.reset()
 for i in range(10000):
+	env.render()
+	time.sleep(0.01)
 	old_lives = env.unwrapped.ale.lives()
 	s,r,done,info = env.step(env.action_space.sample())
+	game_score += r
 	current_lives = env.unwrapped.ale.lives()
 	if current_lives < old_lives:
 		print('died, lives = ',current_lives)
 
 	if done:
 		print('termiated, lives = ', current_lives)
+		print('score = ', game_score)
 		break
 
 # import numpy as np

@@ -5,16 +5,46 @@ import numpy as np
 class SubgoalDiscovery():
 	def __init__(self,n_clusters=10,**kargs):
 		self.n_clusters = n_clusters
-		
+		self.outliers = []
+		self.centroid_memory= [] # all the centroids over time of learning
+		self.centroids_list = [] # list of recent centroids
+		self.G = [] # recent list of all subgoals
+		self.C = None # Kmeans centroids in numpy arrays rounded
+
 	def feed_data(self,X):
 		self.X = X
 
-	def find_kmeans_clusters(self,init='random'):
+	def find_kmeans_clusters(self):
+		if self.C is None:
+			print('first time of using kmeans to find centroids')
+			init = 'random' 
+		else:
+			print('updating Kmeans centroids using previous centroids')
+			init = self.C
 		self.kmeans = KMeans(n_clusters=self.n_clusters,init=init,max_iter=300)
 		self.kmeans.fit(self.X)
+		self.C = self.cluster_centroids()
+		self.centroid_memory.append(self.C)		
+		self.centroids_list = [ tuple(g) for g in list(self.C) ]
+		self.G = self.centroids_list + self.outliers
 
 	def cluster_centroids(self):
 		return np.round_(self.kmeans.cluster_centers_)
+
+	def push_outlier(self, outlier,threshold=16):
+		if len(self.outliers) == 0:
+			self.outliers.append(outlier)
+			self.G = self.centroid_subgoals + self.outliers
+			print('discovered outlier is added to the outliers list')
+			return
+		distance = []
+		for member in self.outliers:
+			distance = (member[0]-outlier[0])**2 + (member[1]-outlier[1])**2
+		if min(distance) >= threshold:
+			self.outliers.append(outlier)
+			self.G = self.centroid_subgoals + self.outliers
+		else:
+			print('discovered outlier already in the outliers list')
 
 class UnsupervisedOutlierDetection():
 	def __init__(self,kernel='rbf'):

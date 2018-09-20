@@ -49,7 +49,6 @@ ALPHA = 0.95
 EPS = 0.01
 LEARNING_RATE = 0.00025
 
-
 def sample_from_random_subgoal_set(subgoal_set):
 	index = random.randint(0, len(subgoal_set)-1)
 	return index, subgoal_set[index]
