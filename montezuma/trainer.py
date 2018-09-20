@@ -68,7 +68,7 @@ class IntrinsicMotivation():
 
 		# reset
 		print('-'*60)
-		print('game epsiode: ', self.game_episode)
+		print('game episode: ', self.game_episode)
 		print('time step: ', self.step)
 		S = self.env.reset()
 		s = four_frames_to_4_84_84(S)
@@ -89,7 +89,7 @@ class IntrinsicMotivation():
 			old_lives = self.env.lives()
 			SP, r, terminal, step_info = self.env.step(a)
 			new_lives = self.env.lives()
-			self.epsiode_scores += r	
+			self.episode_scores += r	
 			sp = four_frames_to_4_84_84(SP)
 			man_mask = self.image_processor.get_man_mask(SP)
 			man_loc = get_man_xy_np_coordinate(man_mask)
@@ -149,13 +149,13 @@ class IntrinsicMotivation():
 				s = four_frames_to_4_84_84(S)
 
 			if terminal or task_done:
-				self.episode_scores_list.append(self.epsiode_scores)
+				self.episode_scores_list.append(self.episode_scores)
 				self.episode_rewards_list.append(self.episode_rewards)
 				self.game_episode += 1
 				self.episode_rewards = 0.0
-				self.epsiode_scores = 0.0				
+				self.episode_scores = 0.0				
 				print('-'*60)
-				print('game epsiode: ', self.game_episode)
+				print('game episode: ', self.game_episode)
 				print('time step: ', self.step)
 				S = self.env.reset() # reset S
 				s = four_frames_to_4_84_84(S) # get s
@@ -237,7 +237,7 @@ class IntrinsicMotivation():
 			if r > 0:
 				print('############# found an outlier - test time ###############')
 				self.subgoal_discory.push_outlier(man_loc)
-				self.epsiode_scores += r
+				self.episode_scores += r
 			
 			if new_lives < old_lives:
 				print('agent died, current lives = ', new_lives)
