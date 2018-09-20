@@ -25,7 +25,7 @@ intrinsic_motivation_trainer = IntrinsicMotivation( env=env,
 				 									experience_memory=controller_experience_memory,
 				 									image_processor=rec,
 				 									subgoal_discory=sd)
-intrinsic_motivation_trainer.test()
+intrinsic_motivation_trainer.train()
 
 
 
