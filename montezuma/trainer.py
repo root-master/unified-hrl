@@ -140,7 +140,7 @@ class IntrinsicMotivation():
 				subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 				g = single_channel_frame_to_1_84_84(subgoal_frame)
 
-			if (new_lives < old_lives) and not terminal:
+			if (new_lives < old_lives) and not terminal and self.repeat_noop_action>0:
 				for _ in range(self.repeat_noop_action): # do 20 nothing actions to ignore post-death
 					S,_,_,_ = self.env.step(0)
 				s = four_frames_to_4_84_84(S)
