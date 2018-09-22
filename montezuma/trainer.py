@@ -638,7 +638,6 @@ class MetaControllerController():
 				self.S_test = S
 				s = four_frames_to_4_84_84(S)
 
-
 	def anneal_epsilon(self):
 		if self.step < self.epsilon_annealing_steps:
 			slop = (self.epsilon_start-self.epsilon_end)/self.epsilon_annealing_steps
