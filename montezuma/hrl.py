@@ -238,14 +238,14 @@ class MetaController():
 
 		# forward path
 		q = self.Q.forward(x)
-		q = q.gather(1, actions.unsqueeze(1))
+		q = q.gather(1, subgoal_ids.unsqueeze(1))
 		q = q.squeeze()
 		
 		q_p1 = self.Q.forward(xp)
-		_, a_prime = q_p1.max(1)
+		_, g_prime = q_p1.max(1)
 
 		q_t_p1 = self.Q_t.forward(xp)
-		q_t_p1 = q_t_p1.gather(1, a_prime.unsqueeze(1))
+		q_t_p1 = q_t_p1.gather(1, g_prime.unsqueeze(1))
 		q_t_p1 = q_t_p1.squeeze()
 
 		error = returns + self.gamma * (1 - terminals) * q_t_p1 - q
