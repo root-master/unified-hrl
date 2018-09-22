@@ -217,7 +217,7 @@ class MetaController():
 		return q_np
 
 	def update_w(self):
-		if self.meta_controller_experience_memory.__len__() == 0:
+		if self.meta_controller_experience_memory.__len__() < 2:
 			return
 		states0, subgoal_ids, returns, state_primes0, terminals = \
 			self.meta_controller_experience_memory.sample_meta_controller(batch_size=self.batch_size)
