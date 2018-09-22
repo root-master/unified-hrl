@@ -526,14 +526,13 @@ class MetaControllerController():
 		return g_id, subgoal_mask
 
 	def test_meta_controller(self):
-		self.total_score_testing = 0
 		self.max_total_score_testing = 0
-		self.testing_task_done = False
 		print('testing the meta controller')
 		meta_test_episode = 0
 		self.S_test = self.testing_env.reset()
 		self.task_done = False
 		while(meta_test_episode<10): # let agent plays 10 episodes 		
+			self.total_score_testing = 0
 			if self.task_done:
 				print('meta controller testing is succesful!')
 				break
@@ -543,18 +542,10 @@ class MetaControllerController():
 				S = self.S_test
 				s = four_frames_to_4_84_84(S)
 				g_id = self.epsilon_greedy_meta_controller_testing(s)	
+				self.intrinsic_done_task = False
 				self.test_reaching_subgoal(g_id=g_id)
-				if self.intrinsic_done_task:
-					S = self.S_test
-					s = four_frames_to_4_84_84(S)
-					g_id = self.epsilon_greedy_meta_controller_testing(s)
-					self.test_reaching_subgoal(g_id=g_id)
-					self.intrinsic_done_task = False
-				if self.terminal:
+				if self.terminal or self.task_done:
 					meta_test_episode += 1
-					break
-
-				if self.task_done:
 					break
 
 			self.max_total_score_testing = max([self.max_total_score_testing,self.total_score_testing])
