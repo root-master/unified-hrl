@@ -31,7 +31,7 @@ class SubgoalDiscovery():
 		self.G = self.centroid_subgoals + self.outliers
 
 	def cluster_centroids(self):
-		return np.round_(self.kmeans.cluster_centers_)
+		return np.round_(self.kmeans.cluster_centers_).astype(int)
 
 	def push_outlier(self, outlier,threshold=16):
 		if len(self.outliers) == 0:

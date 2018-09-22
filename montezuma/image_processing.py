@@ -19,7 +19,8 @@ class Recognizer:
 		self.coords = self.get(self.base_img)
 		self.random_subgoals_set = \
 			self.create_random_subgoal_set_from_objects()
-
+		self.discovered_subgoals_set = self.get_discovered_subgoal_set()
+		
 	def blob_detect(self, img, obj):
 		img_man = img[30:,:,:]
 		mask = np.zeros(np.shape(img_man))
@@ -36,11 +37,6 @@ class Recognizer:
 		mean_x = np.sum(indxs[1]) / np.shape(indxs[1])[0]
 		loc = (int(mean_x), int(mean_y+30))
 		
-		# the most bottom pixel of the man
-		# y_id = indxs[0].size
-		# y = indxs[0][-1]
-		# x = indxs[1][y_id-1]
-		# loc = (x, y-2)  
 		template = cv2.imread('templates/' + obj + '.png')
 		w = np.shape(template)[1]
 		h = np.shape(template)[0]
@@ -137,10 +133,70 @@ class Recognizer:
 			subgoal_set.append(subgoal_mask)			
 		return subgoal_set
 
+	def get_discovered_subgoal_set(self):
+		coords = self.coords
+		subgoal_set = []
+		self.discovered_subgoal_meaning_set = []
+		obj = 'ladder'
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+
+		i = 0		
+		for loc in zip(*coords[obj]):
+			if i == 0:
+				meaning = 'ladder middle: '
+			elif i == 1:
+				meaning = 'ladder bottom left: '
+			elif i == 2:
+				meaning = 'ladder bottom right: '
+			p = ( loc[0], loc[1]-h//2 ) # stage part
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning+'stage')
+			p = ( loc[0], loc[1] ) # top part
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning+'top')
+			p = ( loc[0], loc[1]+h//2 ) # bottom part
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning+'bottom')
+			i += 1
+
+		obj = 'key'
+		loc = coords[obj]
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+		p = ( np.asscalar(loc[0]) , np.asscalar(loc[1]) )
+		subgoal_mask = create_mask(p,w,h)
+		subgoal_set.append(subgoal_mask)
+		self.discovered_subgoal_meaning_set.append('key')
+
+		obj = 'door'
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+		i = 0
+		for loc in zip(*coords[obj]):
+			if i == 0:
+				meaning = 'left door'
+			elif i == 1:
+				meaning = 'right door'
+			p = ( loc[0], loc[1]+h//2 )
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning)
+			i += 1			
+		return subgoal_set
+
 	def sample_from_random_subgoal_set(self):
 		random_subgoal_set = self.random_subgoals_set
 		index = random.randint(0, len(random_subgoal_set)-1)
 		return index, random_subgoal_set[index]
+
+	def sample_from_discovered_subgoal_set(self):
+		discovered_subgoal_set = self.discovered_subgoals_set
+		index = random.randint(0, len(discovered_subgoal_set)-1)
+		return index, discovered_subgoal_set[index]
 
 	def create_mask_frame(self,mask):
 		img = self.base_img
@@ -225,6 +281,11 @@ def draw_subgoal(inputim,g):
 	cv2.rectangle(img, pt_0, pt_1, (0,0,255), 2)
 	return img
 
+def draw_circle(inputim,center,radius,color):
+	img = copy.deepcopy(inputim)
+	cv2.circle(img, center, radius, color, -1)
+	return img
+
 def show(img):
 	cv2.imshow('image',img)
 	cv2.waitKey(0)
@@ -282,7 +343,7 @@ def is_man_inside_subgoal_mask(mask_1, mask_2):
 	x_man = mask_1.x + mask_1.w//2
 	y_man = mask_1.y + mask_2.h//2
 
-	if ( (x_man - x_subgoal )**2 + (y_man - y_subgoal)**2 <= 16 ):
+	if ( (x_man - x_subgoal )**2 + (y_man - y_subgoal)**2 <= 64 ):
 		return True
 	else:
 		return False

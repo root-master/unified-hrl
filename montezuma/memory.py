@@ -50,7 +50,7 @@ class ExperienceMemory():
 		return len(self.memory)
 
 class ExperienceMemoryMeta():
-	def __init__(self, size=100000):
+	def __init__(self, size=50000):
 		self.size = size
 		self.memory = []
 
@@ -63,6 +63,7 @@ class ExperienceMemoryMeta():
 
 	def sample_meta_controller(self,batch_size=32):
 		length = self.memory.__len__()
+		batch_size = min([batch_size,self.__len__()])
 		self.indecies = []
 		states0 = np.empty([batch_size,4,84,84], dtype=np.uint8)
 		subgoal_ids = np.empty([batch_size], dtype=np.uint8)

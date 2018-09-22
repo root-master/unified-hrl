@@ -2,30 +2,117 @@ import gym
 import time
 
 
-environment = 'MontezumaRevengeNoFrameskip-v0'
-env = gym.make(environment)
-actions_meaning = env.unwrapped.get_action_meanings()
+# environment = 'MontezumaRevengeNoFrameskip-v0'
+# env = gym.make(environment)
+# actions_meaning = env.unwrapped.get_action_meanings()
 
-game_score = 0.0
-env.reset()
-for i in range(10000):
-	env.render()
-	time.sleep(0.01)
-	old_lives = env.unwrapped.ale.lives()
-	s,r,done,info = env.step(env.action_space.sample())
-	game_score += r
-	current_lives = env.unwrapped.ale.lives()
-	if current_lives < old_lives:
-		print('died, lives = ',current_lives)
+# game_score = 0.0
+# env.reset()
+# for i in range(10000):
+# 	env.render()
+# 	time.sleep(0.01)
+# 	old_lives = env.unwrapped.ale.lives()
+# 	s,r,done,info = env.step(env.action_space.sample())
+# 	game_score += r
+# 	current_lives = env.unwrapped.ale.lives()
+# 	if current_lives < old_lives:
+# 		print('died, lives = ',current_lives)
 
-	if done:
-		print('termiated, lives = ', current_lives)
-		print('score = ', game_score)
-		break
+# 	if done:
+# 		print('termiated, lives = ', current_lives)
+# 		print('score = ', game_score)
+# 		break
 
 # import numpy as np
-# from image_processing import *
-# rec = Recognizer()
+from image_processing import *
+rec = Recognizer()
+# C = [(124.0, 167.0),
+#  (127.0, 82.0),
+#  (64.0, 128.0),
+#  (143.0, 127.0),
+#  (111.0, 117.0),
+#  (30.0, 82.0),
+#  (78.0, 83.0),
+#  (35.0, 171.0),
+#  (79.0, 103.0),
+#  (88.0, 126.0)]
+
+C = [(124.0, 167.0),
+ (127.0, 82.0),
+ (64.0, 128.0),
+ (143.0, 127.0),
+ (111.0, 117.0),
+ (30.0, 82.0),
+ (78.0, 83.0),
+ (49.0, 171.0),
+ (79.0, 103.0),
+ (88.0, 126.0)]
+
+# C = [(123.0, 166.0),
+#  (123.0, 81.0),
+#  (63.0, 128.0),
+#  (139.0, 128.0),
+#  (110.0, 117.0),
+#  (33.0, 80.0),
+#  (78.0, 80.0),
+#  (47.0, 171.0),
+#  (79.0, 102.0),
+#  (87.0, 125.0)]
+
+# C = [(120.0, 167.0),
+#  (117.0, 81.0),
+#  (62.0, 127.0),
+#  (136.0, 128.0),
+#  (110.0, 118.0),
+#  (43.0, 82.0),
+#  (79.0, 79.0),
+#  (46.0, 171.0),
+#  (80.0, 102.0),
+#  (88.0, 126.0)]
+
+# C = [(121.0, 167.0),
+#  (121.0, 80.0),
+#  (62.0, 127.0),
+#  (137.0, 128.0),
+#  (110.0, 117.0),
+#  (36.0, 79.0),
+#  (78.0, 79.0),
+#  (46.0, 171.0),
+#  (79.0, 102.0),
+#  (88.0, 125.0)]
+
+# C = [(125.0, 166.0),
+#  (126.0, 82.0),
+#  (64.0, 128.0),
+#  (142.0, 127.0),
+#  (111.0, 118.0),
+#  (31.0, 81.0),
+#  (78.0, 82.0),
+#  (48.0, 171.0),
+#  (79.0, 103.0),
+#  (88.0, 126.0)]
+
+O = [(21,119)]
+
+G = C + O
+
+img = rec.base_img
+color = (0,0,255)
+for g in C:
+	g = (int(g[0]),int(g[1]))
+	img = draw_circle(img, g, 4, color)
+
+color = (255,100,0)
+for g in O:
+	g = (int(g[0]),int(g[1]))
+	img = draw_circle(img, g, 4, color)
+
+# show(img)
+from matplotlib import pyplot as plt
+plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.show()
+
+
 # from copy import copy
 # img = cv2.imread('./templates/base.png')
 # # img_edge = img_original[55:181,10:150,:]
