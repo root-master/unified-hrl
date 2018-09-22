@@ -585,7 +585,7 @@ class MetaControllerController():
 		s = four_frames_to_4_84_84(S)
 		man_mask = self.image_processor.get_man_mask(S)
 		man_loc = get_man_xy_np_coordinate(man_mask)
-		subgoal_mask = self.image_processor.random_subgoals_set[g_id]
+		subgoal_mask = self.G[g_id]
 		print('testing to reach subgoal, g_id = ', g_id)
 		subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
