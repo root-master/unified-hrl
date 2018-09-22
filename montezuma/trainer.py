@@ -449,7 +449,7 @@ class MetaControllerController():
 				self.episode_scores = 0.0
 				self.episode_steps = 0
 				self.meta_episode = 0
- 				g_id, subgoal_mask = self.get_subgoal(s) # get g
+				g_id, subgoal_mask = self.get_subgoal(s) # get g
 				print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_seta(g_id))
 				subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 				g = single_channel_frame_to_1_84_84(subgoal_frame)
