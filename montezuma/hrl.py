@@ -204,14 +204,14 @@ class MetaController():
 		
 	def get_best_option(self,s):
 		x = s.reshape((1,4,84,84))
-		x = torch.Tensor(x).type(self.dtype).to(self.device1)
+		x = torch.Tensor(x).type(self.dtype).to(self.device)
 		q = self.Q.forward(x/255.0)
 		q_np = q.cpu().detach().numpy()
 		return q_np.argmax()
 
 	def compute_Q(self,s):
 		x = s.reshape((1,4,84,84))
-		x = torch.Tensor(x).type(self.dtype).to(self.device1)
+		x = torch.Tensor(x).type(self.dtype).to(self.device)
 		q = self.Q.forward(x/255.0)
 		q_np = q.cpu().detach().numpy()
 		return q_np
