@@ -371,7 +371,7 @@ class MetaControllerController():
 		g_id, subgoal_mask = self.get_subgoal(s)
 		g0 = copy.deepcopy(g_id)
 		self.train_assignment_subgoal_count[g0]+=1
-		print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set(g_id))
+		print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set[g_id])
 		subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
 
@@ -402,7 +402,7 @@ class MetaControllerController():
 
 			if intrinsic_done_task:
 				intrinsic_done = 1 # binary mask		
-				print('succesful intrinsic motivation learning to ', self.image_processor.discovered_subgoal_meaning_set(g_id))
+				print('succesful intrinsic motivation learning to ', self.image_processor.discovered_subgoal_meaning_set[g_id])
 				r_tilde = +1.0
 				self.intrinsic_motivation_learning_episode += 1
 				self.train_success_subgoal_count[g0] += 1			
@@ -450,7 +450,7 @@ class MetaControllerController():
 				self.episode_steps = 0
 				self.meta_episode = 0
 				g_id, subgoal_mask = self.get_subgoal(s) # get g
-				print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set(g_id))
+				print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set[g_id])
 				subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 				g = single_channel_frame_to_1_84_84(subgoal_frame)
 				g0 = copy.deepcopy(g_id)
@@ -480,7 +480,7 @@ class MetaControllerController():
 				man_mask = self.image_processor.get_man_mask(S) # man's mask
 				man_loc = get_man_xy_np_coordinate(man_mask) # man's np location
 				g_id, subgoal_mask = self.get_subgoal(s)
-				print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set(g_id))
+				print('new subgoal assigned = ', self.image_processor.discovered_subgoal_meaning_set[g_id])
 				subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask) #subgoal frame
 				g = single_channel_frame_to_1_84_84(subgoal_frame)
 				g0 = copy.deepcopy(g_id)
