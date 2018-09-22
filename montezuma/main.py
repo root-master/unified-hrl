@@ -59,7 +59,7 @@ controller = Controller(experience_memory=controller_experience_memory,
 
 # create Meta-Controller 
 from hrl import MetaController
-meta_controller = MetaController(experience_memory=meta_controller_experience_memory)
+meta_controller = MetaController(meta_controller_experience_memory=meta_controller_experience_memory)
 
 # create Trainer (Deep HRL Q-Learning loop)
 from trainer import MetaControllerController
