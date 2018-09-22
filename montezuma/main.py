@@ -46,6 +46,11 @@ controller_experience_memory = ExperienceMemory()
 from memory import ExperienceMemoryMeta
 meta_controller_experience_memory = ExperienceMemoryMeta() 
 
+# create subgoal discovery unit
+from subgoal_discovery import SubgoalDiscovery
+sd = SubgoalDiscovery()
+
+
 # create Controller 
 from hrl import Controller
 controller = Controller(experience_memory=controller_experience_memory,
@@ -65,6 +70,7 @@ meta_controller_controller_trainer = \
 		meta_controller=meta_controller,
 		experience_memory=controller_experience_memory,
 		meta_controller_experience_memory=meta_controller_experience_memory,
-		image_processor=rec)
+		image_processor=rec,
+		subgoal_discovery=sd)
 
 meta_controller_controller_trainer.train()
