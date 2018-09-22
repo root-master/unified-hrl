@@ -500,7 +500,8 @@ class MetaControllerController():
 				self.subgoal_discory.save_results(results_file_path=results_file_path)
 
 			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
-				self.test()
+				self.test_controller()
+				self.test_meta_controller()
 
 			if (t>0) and (t % self.save_model_freq == 0): # save controller model
 				model_save_path = './models_phase_2/controller_step_' + str(t) + '.model'
