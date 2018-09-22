@@ -26,10 +26,9 @@ class Controller():
 		# BUILD MODEL 
 		USE_CUDA = torch.cuda.is_available()
 		if torch.cuda.is_available():
-			device0 = torch.device("cuda:0")
+			self.device = torch.device("cuda:0")
 		else:
-			device0 = torch.device("cpu")
-		self.device = device0
+			self.device = torch.device("cpu")
 
 		dfloat_cpu = torch.FloatTensor
 		dfloat_gpu = torch.cuda.FloatTensor
@@ -57,12 +56,12 @@ class Controller():
 		for param in Q_t.parameters():
 			param.requires_grad = False
 
-		Q = Q.to(device0)
-		Q_t = Q_t.to(device0)
+		Q = Q.to(self.device)
+		Q_t = Q_t.to(self.device)
 
 		# if torch.cuda.device_count() > 0:
-		# 	Q = nn.DataParallel(Q).to(device0)
-		# 	Q_t = nn.DataParallel(Q_t).to(device0)
+		# 	Q = nn.DataParallel(Q).to(self.device)
+		# 	Q_t = nn.DataParallel(Q_t).to(self.device)
 		# 	batch_size = batch_size * torch.cuda.device_count()
 		# else:
 		# 	batch_size = batch_size
@@ -98,15 +97,14 @@ class Controller():
 		rewards = torch.Tensor(rewards).type(self.dtype)
 		intrinsic_dones = torch.Tensor(intrinsic_dones).type(self.dtype)
 		# sending data to gpu
-		device0 = self.device
 		dtype = self.dtype
 		if torch.cuda.is_available():
 			with torch.cuda.device(0):
-				x = torch.Tensor(x).to(device0).type(dtype)/255.0
-				xp = torch.Tensor(xp).to(device0).type(dtype)/255.0
-				actions = actions.to(device0)
-				rewards = rewards.to(device0)
-				intrinsic_dones = intrinsic_dones.to(device0)
+				x = torch.Tensor(x).to(self.device).type(dtype)/255.0
+				xp = torch.Tensor(xp).to(self.device).type(dtype)/255.0
+				actions = actions.to(self.device)
+				rewards = rewards.to(self.device)
+				intrinsic_dones = intrinsic_dones.to(self.device)
 		# forward path
 		q = self.Q.forward(x)
 		q = q.gather(1, actions.unsqueeze(1))
@@ -160,12 +158,11 @@ class MetaController():
 		# BUILD MODEL 
 		USE_CUDA = torch.cuda.is_available()
 		if torch.cuda.is_available() and torch.cuda.device_count()>1:
-			device1 = torch.device("cuda:1")
+			self.device = torch.device("cuda:1")
 		elif torch.cuda.device_count()==1:
-			device1 = torch.device("cuda:0")
+			self.device = torch.device("cuda:0")
 		else:
-			device1 = torch.device("cpu")
-		self.device = device1
+			self.device = torch.device("cpu")
 
 		dfloat_cpu = torch.FloatTensor
 		dfloat_gpu = torch.cuda.FloatTensor
@@ -191,8 +188,8 @@ class MetaController():
 		for param in Q_t.parameters():
 			param.requires_grad = False
 
-		Q = Q.to(device1)
-		Q_t = Q_t.to(device1)
+		Q = Q.to(self.device)
+		Q_t = Q_t.to(self.device)
 
 		self.batch_size = batch_size
 		self.Q = Q
@@ -229,14 +226,13 @@ class MetaController():
 		returns = torch.Tensor(returns).type(self.dtype)
 		terminals = torch.Tensor(terminals).type(self.dtype)
 		# sending data to gpu
-		device1 = self.device
 		dtype = self.dtype
 
-		x = torch.Tensor(x).to(device1).type(dtype)/255.0
-		xp = torch.Tensor(xp).to(device1).type(dtype)/255.0
-		subgoal_ids = subgoal_ids.to(device1)
-		returns = returns.to(device1)
-		terminals = terminals.to(device1)
+		x = torch.Tensor(x).to(self.device).type(dtype)/255.0
+		xp = torch.Tensor(xp).to(self.device).type(dtype)/255.0
+		subgoal_ids = subgoal_ids.to(self.device)
+		returns = returns.to(self.device)
+		terminals = terminals.to(self.device)
 
 		# forward path
 		q = self.Q.forward(x)
