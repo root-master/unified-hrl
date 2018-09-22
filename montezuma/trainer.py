@@ -290,7 +290,7 @@ class MetaControllerController():
 				env=None,
 				controller=None,
 				meta_controller = None,
-				expereince_memory=None,
+				experience_memory=None,
 				meta_conroller_experience_memory=None,
 				image_processor=None,
 				subgoal_discory=None,
@@ -299,7 +299,7 @@ class MetaControllerController():
 		self.controller = controller
 		self.meta_controller = meta_controller
 		self.experience_memory = experience_memory
-		self.meta_conroller_experience_memory = meta_experience_memory
+		self.meta_conroller_experience_memory = meta_conroller_experience_memory
 		self.image_processor = image_processor
 		self.subgoal_discory = subgoal_discory
 		self.G = image_processor.get_discovered_subgoal_set()
