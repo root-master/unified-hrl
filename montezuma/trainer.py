@@ -291,7 +291,7 @@ class MetaControllerController():
 				controller=None,
 				meta_controller = None,
 				experience_memory=None,
-				meta_conroller_experience_memory=None,
+				meta_controller_experience_memory=None,
 				image_processor=None,
 				subgoal_discory=None,
 				**kwargs):
@@ -299,7 +299,7 @@ class MetaControllerController():
 		self.controller = controller
 		self.meta_controller = meta_controller
 		self.experience_memory = experience_memory
-		self.meta_conroller_experience_memory = meta_conroller_experience_memory
+		self.meta_controller_experience_memory = meta_controller_experience_memory
 		self.image_processor = image_processor
 		self.subgoal_discory = subgoal_discory
 		self.G = image_processor.get_discovered_subgoal_set()
@@ -442,7 +442,7 @@ class MetaControllerController():
 				s1 = copy.deepcopy(s)
 				meta_controller_experience = ExperienceMeta(s0,g0,self.episode_rewards,s1,done)
 				s0 = copy.deepcopy(s1)
-				self.meta_conroller_experience_memory.push(meta_controller_experience)
+				self.meta_controller_experience_memory.push(meta_controller_experience)
 				self.episode_rewards_list.append(self.episode_rewards)
 				self.episode_scores_list.append(self.episode_scores)
 				self.episode_rewards = 0.0
