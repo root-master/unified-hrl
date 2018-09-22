@@ -577,7 +577,7 @@ class MetaControllerController():
 		if not self.testing_task_done:
 			print('testing is not succesful!')
 
-		self.testing_scores.append(self.test_episode_scores) 
+		self.testing_scores.append(self.total_score_testing) 
 		print('test score: ', self.total_score_testing)
 
 	def test_reaching_subgoal(self,g_id=0):
