@@ -3,7 +3,7 @@ import numpy as np
 import copy 
 import pickle 
 from image_processing import *
-from memory import Experience
+from memory import Experience, ExperienceMeta
 from Environment import Environment
 import time
 
