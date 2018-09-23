@@ -324,10 +324,11 @@ class MetaControllerController():
 		self.controller_target_update_freq = 10000
 		self.meta_controller_target_update_freq = 10000
 		self.learning_freq = 4
-		self.meta_learning_freq = 40
+		self.meta_learning_freq = 20
 		self.learning_starts = 50000
 		self.save_model_freq = 50000
-		self.test_freq = 1000
+		self.test_freq = 10000
+		self.meta_controller_test_freq = 50000
 		self.subgoal_discovery_freq = 50000
 		self.epsilon_start = 1.0
 		self.epsilon_end = 0.1
@@ -513,6 +514,8 @@ class MetaControllerController():
 
 			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
 				self.test_controller()
+
+			if (t>self.learning_starts) and (t % self.meta_controller_test_freq == 0):
 				self.test_meta_controller()
 
 			if (t>0) and (t % self.save_model_freq == 0): # save controller model
@@ -525,10 +528,17 @@ class MetaControllerController():
 			if (t>0) and (t % self.save_results_freq == 0):
 				results_file_path = './results_phase_2/performance_results_' + str(t) + '.pkl'
 				with open(results_file_path, 'wb') as f: 
-					pickle.dump([self.episode_scores_list,self.episode_rewards_list], f)
-					pickle.dump([self.game_episode_scores_list,self.game_episode_rewards_list], f)
-					pickle.dump([self.train_assignment_subgoal_count,self.train_success_subgoal_count],f)
-					pickle.dump([self.testing_scores,self.meta_controller_testing_scores],f)
+					pickle.dump([self.episode_scores_list,
+								 self.episode_rewards_list,
+								 self.game_episode_scores_list,
+								 self.game_episode_rewards_list,
+								 self.train_assignment_subgoal_count,
+								 self.train_success_subgoal_count,
+								 self.train_success_subgoal_count,
+								 self.train_success_subgoal_count,
+								 self.train_success_subgoal_count,
+								 self.testing_scores,
+								 self.meta_controller_testing_scores], f)
 			
 			if (t>self.learning_starts) and (t % self.controller_target_update_freq == 0):
 				self.controller.update_target_params()
