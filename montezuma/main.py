@@ -24,7 +24,7 @@
 # 				 									controller=controller,
 # 				 									experience_memory=controller_experience_memory,
 # 				 									image_processor=rec,
-# 				 									subgoal_discory=sd)
+# 				 									subgoal_discovery=sd)
 # intrinsic_motivation_trainer.train()
 
 

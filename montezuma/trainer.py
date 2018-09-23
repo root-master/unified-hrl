@@ -13,14 +13,14 @@ class IntrinsicMotivation():
 				 controller=None,
 				 experience_memory=None,
 				 image_processor=None,
-				 subgoal_discory=None,
+				 subgoal_discovery=None,
 				 **kwargs):
 
 		self.env = env
 		self.controller = controller
 		self.experience_memory = experience_memory
 		self.image_processor = image_processor
-		self.subgoal_discory = subgoal_discory
+		self.subgoal_discovery = subgoal_discovery
 
 		self.testing_env = Environment(task=self.env.task) # testing environment
 		self.testing_scores = [] # record testing scores
@@ -98,7 +98,7 @@ class IntrinsicMotivation():
 			# outlier for the subgoal discovery
 			if r > 0:
 				print('############# found an outlier ###############')
-				self.subgoal_discory.push_outlier(man_loc)
+				self.subgoal_discovery.push_outlier(man_loc)
 			else:
 				r = -0.1 # small negative reward
 
@@ -171,10 +171,10 @@ class IntrinsicMotivation():
 
 			if (t>0) and (t % self.subgoal_discovery_freq==0): # find centroids
 				X = self.experience_memory.get_man_positions()
-				self.subgoal_discory.feed_data(X)
-				self.subgoal_discory.find_kmeans_clusters()
+				self.subgoal_discovery.feed_data(X)
+				self.subgoal_discovery.find_kmeans_clusters()
 				results_file_path = './results/subgoal_discovery_step_' + str(t) + '.pkl'
-				self.subgoal_discory.save_results(results_file_path=results_file_path)
+				self.subgoal_discovery.save_results(results_file_path=results_file_path)
 
 			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
 				self.test()
@@ -236,7 +236,7 @@ class IntrinsicMotivation():
 			# outlier for the subgoal discovery
 			if r > 0:
 				print('############# found an outlier - test time ###############')
-				self.subgoal_discory.push_outlier(man_loc)
+				self.subgoal_discovery.push_outlier(man_loc)
 				self.episode_scores += r
 			
 			if new_lives < old_lives:
@@ -293,7 +293,7 @@ class MetaControllerController():
 				experience_memory=None,
 				meta_controller_experience_memory=None,
 				image_processor=None,
-				subgoal_discory=None,
+				subgoal_discovery=None,
 				**kwargs):
 		self.env = env
 		self.controller = controller
@@ -301,7 +301,7 @@ class MetaControllerController():
 		self.experience_memory = experience_memory
 		self.meta_controller_experience_memory = meta_controller_experience_memory
 		self.image_processor = image_processor
-		self.subgoal_discory = subgoal_discory
+		self.subgoal_discovery = subgoal_discovery
 		self.G = image_processor.get_discovered_subgoal_set()
 
 		self.testing_env = Environment(task=self.env.task) # testing environment
@@ -396,7 +396,7 @@ class MetaControllerController():
 			# outlier for the subgoal discovery
 			if r > 0:
 				print('############# found an outlier ###############')
-				self.subgoal_discory.push_outlier(man_loc)
+				self.subgoal_discovery.push_outlier(man_loc)
 			else:
 				r = -0.1 # small negative reward
 
@@ -494,10 +494,10 @@ class MetaControllerController():
 
 			if (t>0) and (t % self.subgoal_discovery_freq==0): # find centroids
 				X = self.experience_memory.get_man_positions()
-				self.subgoal_discory.feed_data(X)
-				self.subgoal_discory.find_kmeans_clusters()
+				self.subgoal_discovery.feed_data(X)
+				self.subgoal_discovery.find_kmeans_clusters()
 				results_file_path = './results_phase_2/subgoal_discovery_step_' + str(t) + '.pkl'
-				self.subgoal_discory.save_results(results_file_path=results_file_path)
+				self.subgoal_discovery.save_results(results_file_path=results_file_path)
 
 			if (t>self.learning_starts) and (t % self.test_freq == 0): # test controller's performance
 				self.test_controller()
@@ -608,7 +608,7 @@ class MetaControllerController():
 			# outlier for the subgoal discovery
 			if r > 0:
 				print('############# found an outlier - test time ###############')
-				self.subgoal_discory.push_outlier(man_loc)
+				self.subgoal_discovery.push_outlier(man_loc)
 			
 			if new_lives < old_lives:
 				print('agent died, current lives = ', new_lives)
