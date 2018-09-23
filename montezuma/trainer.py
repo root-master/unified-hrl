@@ -78,7 +78,6 @@ class IntrinsicMotivation():
 		print('new subgoal assigned, g_id = ', g_id)
 		subgoal_frame = self.image_processor.create_mask_frame(subgoal_mask)
 		g = single_channel_frame_to_1_84_84(subgoal_frame)
-
 		for t in range(self.max_iter+1):
 			self.step = t
 			if t < self.learning_starts:
@@ -189,19 +188,28 @@ class IntrinsicMotivation():
 				with open(results_file_path, 'wb') as f: 
 					pickle.dump([self.episode_scores_list,self.episode_rewards_list,self.testing_scores], f)
 
-			if (t>self.learning_starts) and (t % self.learning_freq == 0):
-				self.controller.update_w()				
+			if (t>self.learning_starts) and (t % self.controller_target_update_freq == 0):
+				self.controller.update_target_params()
+
 			
 	def test(self):
 		self.total_score_testing = 0
 		self.testing_task_done = False
-		subgoals_order_before_key = [0,1,4,5,3,2]
-		key = [6]
+		# subgoals_order_before_key = [0,1,4,5,3,2]
+		# key = [6]
+		# if random.random() < 0.5: # flip a coin		
+		# 	subgoals_order_after_key = [2,3,5,4,1,0,8]
+		# else:
+		# 	subgoals_order_after_key = [2,3,5,4,1,0,10]
+		# subgoal_orders = subgoals_order_before_key + key + subgoals_order_after_key
+		subgoals_order_before_key = [0,1,2,6,7,8,5,4,3,9]
+		key = [9]
+		subgoals_order_after_key = [3,4,5,8,7,6,2,1,0]
 		if random.random() < 0.5: # flip a coin		
-			subgoals_order_after_key = [2,3,5,4,1,0,8]
+			door = [10]
 		else:
-			subgoals_order_after_key = [2,3,5,4,1,0,10]
-		subgoal_orders = subgoals_order_before_key + key + subgoals_order_after_key
+			door = [11]
+		subgoal_orders = subgoals_order_before_key + key + subgoals_order_after_key + door
 		print('testing the controller')
 		self.S_test = self.testing_env.reset()
 		for g_id in subgoal_orders:

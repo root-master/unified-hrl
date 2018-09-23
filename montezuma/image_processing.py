@@ -20,6 +20,7 @@ class Recognizer:
 		self.random_subgoals_set = \
 			self.create_random_subgoal_set_from_objects()
 		self.discovered_subgoals_set = self.get_discovered_subgoal_set()
+		self.random_subgoals_set = self.discovered_subgoals_set
 		
 	def blob_detect(self, img, obj):
 		img_man = img[30:,:,:]
