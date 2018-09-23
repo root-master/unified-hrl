@@ -113,7 +113,7 @@ class Recognizer:
 			p = ( loc[0], loc[1]+h//2 ) # bottom part
 			subgoal_mask = create_mask(p,w,h//2)
 			subgoal_set.append(subgoal_mask)
-
+			
 		obj = 'key'
 		loc = coords[obj]
 		w = coords[obj+'_w']
