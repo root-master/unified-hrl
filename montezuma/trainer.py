@@ -306,6 +306,7 @@ class MetaControllerController():
 
 		self.testing_env = Environment(task=self.env.task) # testing environment
 		self.epsilon_testing = 0.05
+		self.epsilon_testing_meta = 0.1
 		self.max_steps_testing = 200
 		# parameters
 		self.max_iter = 2500000
@@ -515,8 +516,7 @@ class MetaControllerController():
 				with open(results_file_path, 'wb') as f: 
 					pickle.dump([self.episode_scores_list,self.episode_rewards_list], f)
 					pickle.dump([self.game_episode_scores_list,self.game_episode_rewards_list], f)
-					pickle.dump([self.train_assignment_subgoal_count,testing_assignment_subgoal_count],f)
-					pickle.dump([self.train_success_subgoal_count,testing_success_subgoal_count],f)
+					pickle.dump([self.train_assignment_subgoal_count,self.train_success_subgoal_count],f)
 					pickle.dump([self.testing_scores,self.meta_controller_testing_scores],f)
 			
 	def get_subgoal(self,s):
@@ -533,13 +533,13 @@ class MetaControllerController():
 		meta_test_episode = 0
 		self.S_test = self.testing_env.reset()
 		self.task_done = False
+		self.intrinsic_done_task = False
 		while(meta_test_episode<10): # let agent plays 10 episodes 		
 			self.total_score_testing = 0
 			if self.task_done:
 				print('meta controller testing is succesful!')
 				break
 			self.terminal = False
-			self.intrinsic_done_task = False
 			while not self.terminal:
 				S = self.S_test
 				s = four_frames_to_4_84_84(S)
@@ -657,7 +657,7 @@ class MetaControllerController():
 			return self.meta_controller.get_best_option(s)
 
 	def epsilon_greedy_meta_controller_testing(self,s):
-		if random.random() < self.epsilon_testing:
+		if random.random() < self.epsilon_testing_meta:
 			return random.randint(0, len(self.G)-1)
 		else:
 			return self.meta_controller.get_best_option(s)
