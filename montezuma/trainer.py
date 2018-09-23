@@ -25,7 +25,7 @@ class IntrinsicMotivation():
 		self.testing_env = Environment(task=self.env.task) # testing environment
 		self.testing_scores = [] # record testing scores
 		self.epsilon_testing = 0.05
-		self.max_steps_testing = 10000
+		self.max_steps_testing = 200
 		# parameters
 		self.max_iter = 2500000
 		self.controller_target_update_freq = 10000
@@ -188,6 +188,9 @@ class IntrinsicMotivation():
 				results_file_path = './results/performance_results_' + str(t) + '.pkl'
 				with open(results_file_path, 'wb') as f: 
 					pickle.dump([self.episode_scores_list,self.episode_rewards_list,self.testing_scores], f)
+
+			if (t>self.learning_starts) and (t % self.learning_freq == 0):
+				self.controller.update_w()				
 			
 	def test(self):
 		self.total_score_testing = 0
@@ -195,9 +198,9 @@ class IntrinsicMotivation():
 		subgoals_order_before_key = [0,1,4,5,3,2]
 		key = [6]
 		if random.random() < 0.5: # flip a coin		
-			subgoals_order_after_key = [1,0,10]
+			subgoals_order_after_key = [2,3,5,4,1,0,8]
 		else:
-			subgoals_order_after_key = [1,0,8]
+			subgoals_order_after_key = [2,3,5,4,1,0,10]
 		subgoal_orders = subgoals_order_before_key + key + subgoals_order_after_key
 		print('testing the controller')
 		self.S_test = self.testing_env.reset()
@@ -519,6 +522,11 @@ class MetaControllerController():
 					pickle.dump([self.train_assignment_subgoal_count,self.train_success_subgoal_count],f)
 					pickle.dump([self.testing_scores,self.meta_controller_testing_scores],f)
 			
+			if (t>self.learning_starts) and (t % self.controller_target_update_freq == 0):
+				self.controller.update_target_params()
+			if (t>self.learning_starts) and (t % self.meta_controller_target_update_freq == 0):
+				self.meta_controller.update_target_params()
+
 	def get_subgoal(self,s):
 		if self.step < self.learning_starts:
 			g_id, subgoal_mask = self.image_processor.sample_from_discovered_subgoal_set()
@@ -534,7 +542,7 @@ class MetaControllerController():
 		self.S_test = self.testing_env.reset()
 		self.task_done = False
 		self.intrinsic_done_task = False
-		while(meta_test_episode<10): # let agent plays 10 episodes 		
+		while(meta_test_episode<2): # let agent plays 10 episodes 		
 			self.total_score_testing = 0
 			if self.task_done:
 				print('meta controller testing is succesful!')
