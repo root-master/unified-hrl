@@ -148,7 +148,8 @@ class MetaController():
 				 alpha=0.95,
 				 eps=0.01,
 				 batch_size=32,
-				 gamma=0.99):
+				 gamma=0.99,
+				 num_options=12):
 		# expereince replay memory
 		self.meta_controller_experience_memory = meta_controller_experience_memory
 		self.lr = lr # learning rate
@@ -181,8 +182,8 @@ class MetaController():
 		self.dlongtype = dlongtype
 		self.duinttype = duinttype
 
-		Q = DQN(in_channels=4, num_actions=12).type(dtype)		
-		Q_t = DQN(in_channels=4, num_actions=12).type(dtype)
+		Q = DQN(in_channels=4, num_actions=num_options).type(dtype)		
+		Q_t = DQN(in_channels=4, num_actions=num_options).type(dtype)
 		Q_t.load_state_dict(Q.state_dict())
 		Q_t.eval()
 		for param in Q_t.parameters():

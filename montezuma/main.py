@@ -30,7 +30,8 @@
 # phase II:
 from image_processing import Recognizer
 rec = Recognizer()
-G = rec.get_discovered_subgoal_set()
+G = rec.discovered_subgoals_set
+num_options = len(G)
 
 # # create the environment
 from Environment import Environment
@@ -57,7 +58,8 @@ controller = Controller(experience_memory=controller_experience_memory,
 
 # create Meta-Controller 
 from hrl import MetaController
-meta_controller = MetaController(meta_controller_experience_memory=meta_controller_experience_memory)
+meta_controller = MetaController(meta_controller_experience_memory=meta_controller_experience_memory,
+								num_options=num_options)
 
 # create Trainer (Deep HRL Q-Learning loop)
 from trainer import MetaControllerController

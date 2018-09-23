@@ -19,7 +19,8 @@ class Recognizer:
 		self.coords = self.get(self.base_img)
 		self.random_subgoals_set = \
 			self.create_random_subgoal_set_from_objects()
-		self.discovered_subgoals_set = self.get_discovered_subgoal_set()
+		# self.discovered_subgoals_set = self.get_discovered_subgoal_set()
+		self.discovered_subgoals_set = self.get_discovered_subgoal_set_6()
 		self.random_subgoals_set = self.discovered_subgoals_set
 		
 	def blob_detect(self, img, obj):
@@ -113,7 +114,7 @@ class Recognizer:
 			p = ( loc[0], loc[1]+h//2 ) # bottom part
 			subgoal_mask = create_mask(p,w,h//2)
 			subgoal_set.append(subgoal_mask)
-			
+
 		obj = 'key'
 		loc = coords[obj]
 		w = coords[obj+'_w']
@@ -188,6 +189,62 @@ class Recognizer:
 			self.discovered_subgoal_meaning_set.append(meaning)
 			i += 1			
 		return subgoal_set
+
+	def get_discovered_subgoal_set_6(self):
+		coords = self.coords
+		subgoal_set = []
+		self.discovered_subgoal_meaning_set = []
+		obj = 'ladder'
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+
+		i = 0		
+		for loc in zip(*coords[obj]):
+			if i == 0:
+				meaning = 'ladder middle: '
+			elif i == 1:
+				meaning = 'ladder bottom left: '
+			elif i == 2:
+				meaning = 'ladder bottom right: '
+			# p = ( loc[0], loc[1]-h//2 ) # stage part
+			# subgoal_mask = create_mask(p,w,h//2)
+			# subgoal_set.append(subgoal_mask)
+			# self.discovered_subgoal_meaning_set.append(meaning+'stage')
+			# p = ( loc[0], loc[1] ) # top part
+			# subgoal_mask = create_mask(p,w,h//2)
+			# subgoal_set.append(subgoal_mask)
+			# self.discovered_subgoal_meaning_set.append(meaning+'top')
+			p = ( loc[0], loc[1]+h//2 ) # bottom part
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning+'bottom')
+			i += 1
+
+		obj = 'key'
+		loc = coords[obj]
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+		p = ( np.asscalar(loc[0]) , np.asscalar(loc[1]) )
+		subgoal_mask = create_mask(p,w,h)
+		subgoal_set.append(subgoal_mask)
+		self.discovered_subgoal_meaning_set.append('key')
+
+		obj = 'door'
+		w = coords[obj+'_w']
+		h = coords[obj+'_h']
+		i = 0
+		for loc in zip(*coords[obj]):
+			if i == 0:
+				meaning = 'left door'
+			elif i == 1:
+				meaning = 'right door'
+			p = ( loc[0], loc[1]+h//2 )
+			subgoal_mask = create_mask(p,w,h//2)
+			subgoal_set.append(subgoal_mask)
+			self.discovered_subgoal_meaning_set.append(meaning)
+			i += 1			
+		return subgoal_set
+
 
 	def sample_from_random_subgoal_set(self):
 		random_subgoal_set = self.random_subgoals_set

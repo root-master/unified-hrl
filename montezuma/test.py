@@ -2,7 +2,7 @@
 # import time
 
 import pickle
-t = 2500000
+t = 500000
 results_file_path = './results/performance_results_' + str(t) + '.pkl'
 with open(results_file_path,'rb') as f:
 	A=pickle.load(f)
