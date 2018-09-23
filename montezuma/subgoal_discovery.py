@@ -5,7 +5,7 @@ import os
 import pickle 
 
 class SubgoalDiscovery():
-	def __init__(self,n_clusters=10,**kargs):
+	def __init__(self,n_clusters=5,**kargs):
 		self.n_clusters = n_clusters
 		self.outliers = []
 		self.centroid_memory= [] # all the centroids over time of learning

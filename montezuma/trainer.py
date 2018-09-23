@@ -586,7 +586,7 @@ class MetaControllerController():
 	def test_controller(self):
 		self.total_score_testing = 0
 		self.testing_task_done = False
-		if len(self.G==6):
+		if len(self.G)==6:
 			subgoals_order_before_key = [0,2,1]
 			key = [3]
 			subgoals_order_after_key = [1,2,0]
@@ -595,7 +595,7 @@ class MetaControllerController():
 			else:
 				door = [5]
 
-		if len(self.G==12):
+		if len(self.G)==12:
 			subgoals_order_before_key = [0,1,2,6,7,8,5,4,3,9]
 			key = [9]
 			subgoals_order_after_key = [3,4,5,8,7,6,2,1,0]
