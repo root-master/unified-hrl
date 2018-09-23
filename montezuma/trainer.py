@@ -313,7 +313,7 @@ class MetaControllerController():
 		self.meta_controller_target_update_freq = 10000
 		self.learning_freq = 4
 		self.meta_learning_freq = 40
-		self.learning_starts = 1000
+		self.learning_starts = 50000
 		self.save_model_freq = 50000
 		self.test_freq = 1000
 		self.subgoal_discovery_freq = 50000
@@ -328,7 +328,7 @@ class MetaControllerController():
 		self.game_episode = 0
 		self.meta_episode = 0
 		self.intrinsic_motivation_learning_episode = 0 
-		self.max_episode_steps = 200
+		self.max_episode_steps = 100
 		self.episode_steps = 0
 		# learning variables
 		self.episode_rewards = 0.0 # meta controller episode return including step cost 
@@ -516,6 +516,7 @@ class MetaControllerController():
 					pickle.dump([self.episode_scores_list,self.episode_rewards_list], f)
 					pickle.dump([self.game_episode_scores_list,self.game_episode_rewards_list], f)
 					pickle.dump([self.train_assignment_subgoal_count,testing_assignment_subgoal_count],f)
+					pickle.dump([self.train_success_subgoal_count,testing_success_subgoal_count],f)
 					pickle.dump([self.testing_scores,self.meta_controller_testing_scores],f)
 			
 	def get_subgoal(self,s):
