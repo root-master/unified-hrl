@@ -313,7 +313,7 @@ class MetaControllerController():
 		self.meta_controller_experience_memory = meta_controller_experience_memory
 		self.image_processor = image_processor
 		self.subgoal_discovery = subgoal_discovery
-		self.G = image_processor.get_discovered_subgoal_set()
+		self.G = image_processor.discovered_subgoals_set
 
 		self.testing_env = Environment(task=self.env.task) # testing environment
 		self.epsilon_testing = 0.05
