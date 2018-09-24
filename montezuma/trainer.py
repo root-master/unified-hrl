@@ -341,7 +341,7 @@ class MetaControllerController():
 		self.game_episode = 0
 		self.meta_episode = 0
 		self.intrinsic_motivation_learning_episode = 0 
-		self.max_episode_steps = 100
+		self.max_episode_steps = 1000
 		self.episode_steps = 0
 		# learning variables
 		self.episode_rewards = 0.0 # meta controller episode return including step cost 
@@ -533,9 +533,6 @@ class MetaControllerController():
 								 self.game_episode_scores_list,
 								 self.game_episode_rewards_list,
 								 self.train_assignment_subgoal_count,
-								 self.train_success_subgoal_count,
-								 self.train_success_subgoal_count,
-								 self.train_success_subgoal_count,
 								 self.train_success_subgoal_count,
 								 self.testing_scores,
 								 self.meta_controller_testing_scores], f)

@@ -2,10 +2,12 @@
 # import time
 
 import pickle
-t = 500000
-results_file_path = './results/performance_results_' + str(t) + '.pkl'
+t = 2000000
+results_file_path = './results_phase_2/performance_results_' + str(t) + '.pkl'
+# results_file_path = './results_phase_2/subgoal_discovery_step_' + str(t) +'.pkl'
 with open(results_file_path,'rb') as f:
 	A=pickle.load(f)
+
 
 # environment = 'MontezumaRevengeNoFrameskip-v0'
 # env = gym.make(environment)
@@ -97,37 +99,41 @@ rec = Recognizer()
 #  (79.0, 103.0),
 #  (88.0, 126.0)]
 
-C = [(79, 101),
- (83, 120),
- (65, 126),
- (128, 159),
- (110, 118),
- (136, 127),
- (78, 81),
- (120, 81),
- (44, 170),
- (33, 82)]
+# C = [(79, 101),
+#  (83, 120),
+#  (65, 126),
+#  (128, 159),
+#  (110, 118),
+#  (136, 127),
+#  (78, 81),
+#  (120, 81),
+#  (44, 170),
+#  (33, 82)]
 
-O = [(12,120),
-	(14,116),
-	(19,116),
-	(29,84),
-	(127,83)]
+# O = [(12,120),
+# 	(14,116),
+# 	(19,116),
+# 	(29,84),
+# 	(127,83)]
 
-G = C + O
+# C = [(125, 157), (71, 84), (119, 108), (46, 169), (78, 119)]
+# O = [( 14, 117),(20, 119), ( 21, 112)]
+# G = C + O
 
-img = rec.base_img
-color = (0,0,255)
-for g in C:
-	g = (int(g[0]),int(g[1]))
-	img = draw_circle(img, g, 4, color)
+# img = rec.base_img
+# color = (0,0,255)
+# for g in C:
+# 	g = (int(g[0]),int(g[1]))
+# 	img = draw_circle(img, g, 4, color)
 
-color = (255,100,0)
-for g in O:
-	g = (int(g[0]),int(g[1]))
-	img = draw_circle(img, g, 4, color)
+# color = (255,100,0)
+# for g in O:
+# 	g = (int(g[0]),int(g[1]))
+# 	img = draw_circle(img, g, 4, color)
 
 # show(img)
+import cv2
+img = cv2.imread('./templates/kul.png')
 from matplotlib import pyplot as plt
 plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 plt.show()
