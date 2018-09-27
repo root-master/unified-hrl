@@ -141,17 +141,14 @@ class MetaControllerController():
 				Q = self.meta_controller.Q.compute_Q(S)
 				g_id = self.epsilon_greedy(Q)
 				self.play(g_id)
-
 				if self.done:
 					print('solved the rooms task in episode :', i)
 					done_mask = 1
 				else:
 					done_mask = 0
 
-				if self.terminal:
-					print('reached to the subgoal', g_id)
-					
-				if self.done or self.terminal:
+				if self.terminal or self.done:
+					print('reached to the subgoal', g_id)					
 					s0_p = self.s
 					SP = self.meta_controller.get_meta_state(s0_p)
 					QP = self.meta_controller.Q.compute_QP(SP)
@@ -159,7 +156,6 @@ class MetaControllerController():
 					delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
 					delta = delta * self.lr
 					self.meta_controller.Q.update_w(g_id,delta)
-					g_id = g_id_prime
 
 				if self.done:
 					break
