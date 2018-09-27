@@ -1,5 +1,6 @@
 import copy
 from random import random, randint
+import pickle
 
 class RandomWalk():
 	def __init__(self,
@@ -60,13 +61,15 @@ class PretrainController():
 		self.ng = 6
 		self.gamma = 0.99
 		self.lr = 0.001
-		self.pretrain_all_subgoals_success_list = []
 
 	def train(self):
 		for g_id in range(self.ng):
 			self.pretrain_success_subgoal = []
 			self.train_for_one_goal(g_id)
-			self.pretrain_all_subgoals_success_list.append(self.pretrain_success_subgoal)
+			results_file_path = './results/pretraining_contoller_performance_results_subgoal_' + str(g_id) + '.pkl'
+			with open(results_file_path, 'wb') as f: 
+				pickle.dump([self.pretrain_success_subgoal], f)
+
 
 	def train_for_one_goal(self,g_id):
 		g = self.subgoals[g_id]
@@ -130,6 +133,7 @@ class MetaControllerController():
 		self.lr = 0.001
 		self.episode_rewards = []
 		self.episode_success = []
+		self.save_results_freq = 100
 
 	def train(self):
 		for i in range(self.max_episodes):
@@ -165,6 +169,12 @@ class MetaControllerController():
 
 			self.episode_rewards.append(self.R)
 			self.episode_success.append(done_mask)
+
+			if (i>0) and (i % self.save_results_freq == 0):
+				results_file_path = './results/meta_contoller_performance_results_' + str(i) + '.pkl'
+				with open(results_file_path, 'wb') as f: 
+					pickle.dump([self.episode_rewards,self.episode_success], f)
+
 
 	def play(self,g_id):
 		s = self.s
