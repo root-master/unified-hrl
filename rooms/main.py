@@ -31,20 +31,22 @@ pretainer = PretrainController( env=env,
 								controller=controller,
 								subgoals=subgoals)
 pretainer.train()
+pretainer.controller.Q.save_model()
 
-from hrl import MetaController
-meta_controller = MetaController(subgoal_discovery=subgoal_discovery,
-								outliers=outliers)
+pretainer.controller.Q.load_model()
+# from hrl import MetaController
+# meta_controller = MetaController(subgoal_discovery=subgoal_discovery,
+# 								outliers=outliers)
 
-from trainer import MetaControllerController
-meta_controller_trainer = MetaControllerController( env=env,
-								controller=controller,
-								meta_controller=meta_controller,
-								subgoals=subgoals)
+# from trainer import MetaControllerController
+# meta_controller_trainer = MetaControllerController( env=env,
+# 								controller=controller,
+# 								meta_controller=meta_controller,
+# 								subgoals=subgoals)
 
-meta_controller_trainer.train()
+# meta_controller_trainer.train()
 
-from trainer import VanillaRL
-vanilla_rl = VanillaRL(env=env)
-vanilla_rl.train()
+# from trainer import VanillaRL
+# vanilla_rl = VanillaRL(env=env)
+# vanilla_rl.train()
 

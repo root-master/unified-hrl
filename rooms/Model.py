@@ -1,6 +1,8 @@
 import numpy as np
 from copy import copy 
 from random import random, randint
+import pickle
+
 def normpdf(x_vec,mu,sigma):
 	# normal probability distribution with mean mu and std sigma
 	x = np.exp(- np.square(x_vec - mu) / (2 * sigma * sigma))
@@ -113,6 +115,17 @@ class Model():
 		self.winners = copy(self.winners_prime)
 		self.act = copy(self.act_prime)
 
+	def save_model(self):
+		model_file_path = './models/controller.pkl'
+		with open(model_file_path, 'wb') as f:
+			pickle.dump([self.weights], f)
+
+	def load_model(self):
+		model_file_path = './models/controller.pkl'
+		with open(model_file_path, 'rb') as f:
+			self.weights = pickle.load(f)
+
+
 class MetaModel():
 	def __init__(self):
 		self.ng = 6
@@ -203,6 +216,7 @@ class VanillaRLModel():
 		self.w['ho_w'][self.winners,a] += delta * self.act_winners.reshape(-1,)
 		self.w['ih_w'][:,self.winners] += - self.x.T @ delta_j_winners
 		self.w['ih_b'][:,self.winners] += - delta_j_winners
+
 
 # class Model_1():
 # 	def __init__(self,
