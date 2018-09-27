@@ -41,7 +41,8 @@ OBJECT_TO_IDX = {
 	'empty': 0,
 	'wall' : 1,
 	'key'  : 2,
-	'box'  : 3
+	'box'  : 3,
+	'hallway':4
 }
 
 IDX_TO_OBJECT = dict(zip(OBJECT_TO_IDX.values(), OBJECT_TO_IDX.keys()))
@@ -51,15 +52,13 @@ class WorldObj:
 	Base class for grid world objects
 	"""
 
-	def __init__(self, type, color):
-		assert type in OBJECT_TO_IDX, type
-		assert color in COLOR_TO_IDX, color
-		self.type = type
+	def __init__(self, type_obj, color):
+		self.type = type_obj
 		self.color = color
 		self.contains = None
 
 	def render(self, r):
-		assert False
+		return
 
 	def _setColor(self, r):
 		c = COLORS[self.color]
@@ -78,6 +77,14 @@ class Wall(WorldObj):
 			(CELL_PIXELS,           0),
 			(0          ,           0)
 		])
+
+
+class HallWay(WorldObj):
+	def __init__(self, color='black'):
+		super(HallWay, self).__init__('hallway', color)
+	
+	def render(self,r):
+		pass
 
 class Key(WorldObj):
 	def __init__(self, color='blue'):
@@ -253,7 +260,7 @@ class Grid:
 		for j in range(0, self.height):
 			for i in range(0, self.width):
 				cell = self.get(i, j)
-				if cell == None:
+				if cell is None or cell.type == 'hallway':
 					continue
 				r.push()
 				r.translate(i * CELL_PIXELS, j * CELL_PIXELS)
@@ -322,6 +329,8 @@ class Grid:
 					v = Door(color, isOpen)
 				elif objType == 'locked_door':
 					v = LockedDoor(color, isOpen)
+				elif objType == 'hallway':
+					v = HallWay()
 				elif objType == 'goal':
 					v = Goal()
 				else:
@@ -359,6 +368,8 @@ class MiniGridEnv(gym.Env):
 
 		# Renderer object used to render the whole grid (full-scale)
 		self.gridRender = None
+
+		self.cross_hallway = False
 
 		# # Renderer used to render observations (small-scale agent view)
 		# self.obsRender = None
@@ -425,7 +436,6 @@ class MiniGridEnv(gym.Env):
 		"""
 		Place an object at an empty position in the grid
 		"""
-
 		while True:
 			pos = (
 				self._randInt(0, self.grid.width),
@@ -495,12 +505,18 @@ class MiniGridEnv(gym.Env):
 			self.step_info['has_car'] = True
 			terminal = True
 
+		self.state_before_passing_doorway = (newPos[0],self.gridSize-newPos[1]-1)
+		######### PASS THE HALLWAY ###########
+		if newPos in self.hallways and self.cross_hallway is True:
+			u = u * 3
+			v = v * 3
+			newPos = (self.agentPos[0] + u, self.agentPos[1] + v)
+
 		self.agentPos = newPos
 		state = (newPos[0],self.gridSize-newPos[1]-1)
 		self.state = state
 
 		return state, reward, terminal, self.step_info
-
 
 	def render(self, mode='human', close=False):
 		"""
@@ -666,36 +682,42 @@ class RoomsEnv(MiniGridEnv):
 
 		# Place wall openings connecting the rooms
 		hIdx = self._randInt(1, hSplitIdx-1)
-		self.grid.set(vSplitIdx, hIdx, None)
-		self.grid.set(vSplitIdx-1, hIdx, None)
+		self.grid.set(vSplitIdx, hIdx, HallWay())
+		self.grid.set(vSplitIdx-1, hIdx, HallWay())
 		self.hallways = [(vSplitIdx,height-1-hIdx),(vSplitIdx-1,height-1-hIdx)]
 		print('hallway 1: ',(vSplitIdx,height-1-hIdx),(vSplitIdx-1,height-1-hIdx))
 			
 		hIdx = self._randInt(hSplitIdx+1, height-1)
-		self.grid.set(vSplitIdx, hIdx, None)
-		self.grid.set(vSplitIdx-1, hIdx, None)
+		self.grid.set(vSplitIdx, hIdx, HallWay())
+		self.grid.set(vSplitIdx-1, hIdx, HallWay())
 		self.hallways.append((vSplitIdx,height-1-hIdx))
 		self.hallways.append((vSplitIdx-1,height-1-hIdx))
 		print('hallway 2: ',(vSplitIdx,height-1-hIdx),(vSplitIdx-1,height-1-hIdx))
 		
 		vIdx = self._randInt(1, vSplitIdx-1)
-		self.grid.set(vIdx, hSplitIdx, None)
-		self.grid.set(vIdx, hSplitIdx-1, None)
+		self.grid.set(vIdx, hSplitIdx, HallWay())
+		self.grid.set(vIdx, hSplitIdx-1, HallWay())
 		self.hallways.append((vIdx,height-hSplitIdx-1))
 		self.hallways.append((vIdx,height-hSplitIdx))
 		print('hallway 3: ',(vIdx,height-hSplitIdx-1),(vIdx,height-hSplitIdx))
 		vIdx = self._randInt(vSplitIdx+1, width-1)
-		self.grid.set(vIdx, hSplitIdx, None)
-		self.grid.set(vIdx, hSplitIdx-1, None)
+		self.grid.set(vIdx, hSplitIdx, HallWay())
+		self.grid.set(vIdx, hSplitIdx-1, HallWay())
 		self.hallways.append((vIdx,height-hSplitIdx-1))
 		self.hallways.append((vIdx,height-hSplitIdx))
 		print('hallway 4: ',(vIdx,height-hSplitIdx-1),(vIdx,height-hSplitIdx))
 
 
 		# Select a random position for the agent to start at
-		self.startDir = self._randInt(0, 4)
 		room = self._randElem(self.rooms)
-		self.startPos = self._randPos(room)
+		while True:		
+			self.startDir = self._randInt(0, 4)
+			pos = self._randPos(room)
+			if self.grid.get(*pos) != None:
+				continue
+			else:
+				self.startPos = pos
+				break
 
 		self.objType = ['key','car']
 		self.objects = [Key('green'), Box('red')]
