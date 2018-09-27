@@ -22,13 +22,6 @@ outliers = subgoal_discovery.outliers
 list_outliers = [[g] for g in subgoal_discovery.outliers]
 subgoals = subgoal_discovery.doorway_pairs + list_outliers
 
-# subgoals = [[(7, 13), (8, 13)],
-# 			[(3, 7), (3, 8)],
-# 			[(8, 2), (7, 2)],
-# 			[(14, 8), (14, 7)],
-#  			[(2, 4)],
-#  			[(11, 5)]]
-
 from hrl import Controller
 controller = Controller()
 
@@ -51,18 +44,4 @@ meta_controller_trainer = MetaControllerController( env=env,
 								subgoals=subgoals)
 
 meta_controller_trainer.train()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

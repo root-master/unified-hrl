@@ -60,10 +60,13 @@ class PretrainController():
 		self.ng = 6
 		self.gamma = 0.99
 		self.lr = 0.001
+		self.pretrain_all_subgoals_success_list = []
 
 	def train(self):
 		for g_id in range(self.ng):
+			self.pretrain_success_subgoal = []
 			self.train_for_one_goal(g_id)
+			self.pretrain_all_subgoals_success_list.append(self.pretrain_success_subgoal)
 
 	def train_for_one_goal(self,g_id):
 		g = self.subgoals[g_id]
@@ -77,12 +80,12 @@ class PretrainController():
 				ap = self.epsilon_greedy(Qp)
 				if self.env.state_before_passing_doorway in g:
 					terminal = True
-					done_mask = 1.0
+					done_mask = 1
 					r_tilde = 1.0
 					print('intrinsic motivation is solved in episode: ', i)
 				else:
 					terminal = False
-					done_mask = 0.0
+					done_mask = 0
 					r_tilde = min(-0.1,r)
 				delta = r_tilde + (1 - done_mask) * self.gamma * Qp[0,ap] - Q[0,a]
 				delta = delta * self.lr
@@ -95,6 +98,7 @@ class PretrainController():
 				
 				if terminal or done:
 					break
+			self.pretrain_success_subgoal.append(done_mask)
 
 	def epsilon_greedy(self, Q, test=False):
 		if test:
@@ -125,19 +129,18 @@ class MetaControllerController():
 		self.gamma = 0.99
 		self.lr = 0.001
 		self.episode_rewards = []
+		self.episode_success = []
 
 	def train(self):
 		for i in range(self.max_episodes):
 			print('-'*60)
 			self.R = 0
-			s0 = self.env.reset()
-			self.s0 = s0
-			self.s = s0
+			self.s = self.env.reset()
 			self.done = False
 			self.t = 0
-			while self.t < self.max_steps:
-				s = self.s
-				S = self.meta_controller.get_meta_state(s)
+			while not self.done:
+				S = self.meta_controller.get_meta_state(self.s,
+										has_key=self.env.step_info['has_key'])
 				Q = self.meta_controller.Q.compute_Q(S)
 				g_id = self.epsilon_greedy(Q)
 				self.play(g_id)
@@ -149,18 +152,19 @@ class MetaControllerController():
 
 				if self.terminal or self.done:
 					print('reached to the subgoal', g_id)					
-					s0_p = self.s
-					SP = self.meta_controller.get_meta_state(s0_p)
+					SP = self.meta_controller.get_meta_state(self.s,
+										has_key=self.env.step_info['has_key'])
 					QP = self.meta_controller.Q.compute_QP(SP)
 					g_id_prime = self.epsilon_greedy(QP)
 					delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
 					delta = delta * self.lr
 					self.meta_controller.Q.update_w(g_id,delta)
 
-				if self.done:
+				if self.t > self.max_steps:
 					break
 
 			self.episode_rewards.append(self.R)
+			self.episode_success.append(done_mask)
 
 	def play(self,g_id):
 		s = self.s
@@ -180,7 +184,6 @@ class MetaControllerController():
 			if self.terminal or self.done:
 				break
 
-
 	def epsilon_greedy(self, Q,test=False):
 		if test:
 			return Q.argmax()
@@ -189,17 +192,4 @@ class MetaControllerController():
 			return randint(0, self.ng-1)
 		else:
 			return Q.argmax()
-
-
-
-
-
-
-
-
-
-
-
-
-
 
