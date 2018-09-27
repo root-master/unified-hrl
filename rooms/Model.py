@@ -134,6 +134,76 @@ class MetaModel():
 	def update_w(self,g_id,delta):
 		self.w[:,g_id] += delta * self.S.reshape(-1,)
 
+class VanillaRLModel():
+	def __init__(self,
+				x_grid = 16,
+				y_grid = 16,
+				nA = 4):
+		self.x_grid = x_grid
+		self.y_grid = y_grid
+		self.ns = x_grid + y_grid
+		self.nA = nA
+		self.input_size = self.ns
+		self.x_vec = np.arange(0,x_grid).reshape(1,-1)
+		self.y_vec = np.arange(0,y_grid).reshape(1,-1)
+		self.kwta_rate = 0.1
+		self.init_network()
+
+	def init_network(self):
+		nx = self.input_size
+		nh = self.x_grid * self.y_grid
+		no = self.nA
+		self.nx = nx
+		self.nh = nh
+		self.no = no
+		self.dim_w = {}
+		self.dim_w['ih_w'] = (nx,nh)
+		self.dim_w['ih_b'] = (1,nh)
+		self.dim_w['ho_w'] = (nh,no)
+
+
+		self.w = {}
+		for key,shape in self.dim_w.items():
+			self.w[key] = 0.1 * ( np.random.random(shape) - 0.5 )
+
+	def compute_Q(self, s):
+		'''compute q(s,A;w)'''
+		sx = s[0]
+		sy = s[1]
+		sx_vec = normpdf(self.x_vec, sx, 1)
+		sy_vec = normpdf(self.y_vec, sy, 1)
+		self.x = np.concatenate( (sx_vec, sy_vec), axis=1)
+		self.net = self.x @ self.w['ih_w'] + self.w['ih_b']
+		k = round(self.kwta_rate * self.nh) 
+		self.net_after_kwta, self.winners = kwta(self.net, k)
+		self.act = sigmoid(self.net_after_kwta)
+		self.Q = self.act @ self.w['ho_w']
+		return self.Q
+
+	def compute_Qp(self, sp):
+		'''compute q(s',A;w)'''
+		spx = sp[0]
+		spy = sp[1]
+		spx_vec = normpdf(self.x_vec, spx, 1)
+		spy_vec = normpdf(self.y_vec, spy, 1)
+		self.xp = np.concatenate( (spx_vec, spy_vec), axis=1)
+		self.net_prime = self.xp @ self.w['ih_w'] + self.w['ih_b']
+		k = round(self.kwta_rate * self.nh) 
+		self.net_after_kwta_prime, self.winners_prime = kwta(self.net_prime, k)
+		self.act_prime = sigmoid(self.net_after_kwta_prime)
+		self.Qp = self.act_prime @ self.w['ho_w']
+		return self.Qp
+
+	def update_w(self,a,delta):
+		'''update w in q(s,g,A;w)'''
+		error = -delta
+		self.act_winners = self.act[:,self.winners]		
+		delta_j_winners = error * self.w['ho_w'][self.winners,a].reshape(1,-1) \
+									 * self.act_winners * (1.0-self.act_winners)
+		self.w['ho_w'][self.winners,a] += delta * self.act_winners.reshape(-1,)
+		self.w['ih_w'][:,self.winners] += - self.x.T @ delta_j_winners
+		self.w['ih_b'][:,self.winners] += - delta_j_winners
+
 # class Model_1():
 # 	def __init__(self,
 # 				x_grid = 16,

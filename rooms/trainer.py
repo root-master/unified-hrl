@@ -1,7 +1,7 @@
 import copy
 from random import random, randint
 import pickle
-
+from Model import VanillaRLModel
 class RandomWalk():
 	def __init__(self,
 				env=None,
@@ -17,6 +17,9 @@ class RandomWalk():
 		self.__dict__.update(kwargs)
 
 	def walk(self):
+		print('#'*60)
+		print('Random walk for Subgoal Discovery')
+		print('#'*60)
 		for i in range(self.max_episodes):
 			s = self.env.reset()
 			for j in range(self.max_steps):			
@@ -35,6 +38,9 @@ class RandomWalk():
 				self.subgoal_discovery.report()
 
 	def walk_and_find_doorways(self):
+		print('#'*60)
+		print('Random walk for Doorways Type Subgoal Discovery')
+		print('#'*60)
 		for i in range(self.max_episodes):
 			s = self.env.reset()
 			for j in range(self.max_steps):			
@@ -63,6 +69,9 @@ class PretrainController():
 		self.lr = 0.001
 
 	def train(self):
+		print('#'*60)
+		print('Pretraining Controller in Hierarchcial Reinforcement Leaning')
+		print('#'*60)
 		for g_id in range(self.ng):
 			self.pretrain_success_subgoal = []
 			self.train_for_one_goal(g_id)
@@ -95,7 +104,6 @@ class PretrainController():
 				self.controller.Q.update_w(a,delta)
 				# self.controller.Q.update_Q_to_Qp()
 				s = copy.copy(sp)
-				a = copy.copy(ap)		
 				if done:
 					print('solved the rooms task in episode :', i)
 				
@@ -133,11 +141,13 @@ class MetaControllerController():
 		self.lr = 0.001
 		self.episode_rewards = []
 		self.episode_success = []
-		self.save_results_freq = 100
+		self.save_results_freq = 1000
 
 	def train(self):
+		print('#'*60)
+		print('Training Meta-controller in Hierarchcial Reinforcement Leaning')
+		print('#'*60)
 		for i in range(self.max_episodes):
-			print('-'*60)
 			self.R = 0
 			self.s = self.env.reset()
 			self.done = False
@@ -189,7 +199,8 @@ class MetaControllerController():
 				self.terminal = True
 			else:
 				self.terminal = False
-			self.s = copy.copy(sp)
+			s = copy.copy(sp)
+			self.s = s
 			self.t += 1
 			if self.terminal or self.done:
 				break
@@ -202,4 +213,64 @@ class MetaControllerController():
 			return randint(0, self.ng-1)
 		else:
 			return Q.argmax()
+
+class VanillaRL():
+	def __init__(self,
+				env=None):
+		self.env = env
+		self.Q = VanillaRLModel()
+		self.env = env
+		self.max_episodes = 100000
+		self.max_steps = 200
+		self.epsilon = 0.2
+		self.nA = 4
+		self.gamma = 0.99
+		self.lr = 0.001
+		self.episode_rewards = []
+		self.episode_success = []
+		self.R = 0
+		self.save_results_freq = 1000
+
+	def train(self):
+		print('#'*60)
+		print('Training Vanilla Reinforcement Leaning')
+		print('#'*60)
+		for i in range(self.max_episodes):
+			s = self.env.reset()
+			self.R = 0
+			for j in range(self.max_steps):	
+				Q = self.Q.compute_Q(s)
+				a = self.epsilon_greedy(Q)
+				sp,r,done,info = self.env.step(a)
+				self.R += r
+				Qp = self.Q.compute_Qp(sp)
+				ap = self.epsilon_greedy(Qp)
+				done_mask = 1 if done else 0
+				delta = r_tilde + (1 - done_mask) * self.gamma * Qp[0,ap] - Q[0,a]
+				delta = delta * self.lr
+				self.Q.update_w(a,delta)
+				s = copy.copy(sp)
+				if done:
+					print('solved the rooms task in episode :', i)
+					break
+			self.episode_rewards.append(self.R)
+			self.episode_success.append(done_mask)
+
+			if (i>0) and (i % self.save_results_freq == 0):
+				results_file_path = './results/vanilla-RL_performance_results_' + str(i) + '.pkl'
+				with open(results_file_path, 'wb') as f: 
+					pickle.dump([self.episode_rewards,self.episode_success], f)
+					
+
+	def epsilon_greedy(self, Q,test=False):
+		if test:
+			return Q.argmax()
+
+		if random() < self.epsilon:
+			return randint(0, self.ng-1)
+		else:
+			return Q.argmax()
+
+
+
 

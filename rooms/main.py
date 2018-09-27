@@ -30,7 +30,6 @@ from trainer import PretrainController
 pretainer = PretrainController( env=env,
 								controller=controller,
 								subgoals=subgoals)
-
 pretainer.train()
 
 from hrl import MetaController
@@ -44,4 +43,8 @@ meta_controller_trainer = MetaControllerController( env=env,
 								subgoals=subgoals)
 
 meta_controller_trainer.train()
+
+from trainer import VanillaRL
+vanilla_rl = VanillaRL(env=env)
+vanilla_rl.train()
 
