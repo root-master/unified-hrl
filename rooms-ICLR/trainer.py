@@ -131,13 +131,13 @@ class MetaControllerController():
 		self.controller = controller
 		self.meta_controller = meta_controller
 		self.subgoals = subgoals
-		self.max_episodes = 40000+1
+		self.max_episodes = 2000+1
 		self.max_steps = 200
 		self.max_steps_controller = 25
 		self.epsilon = 0.2
 		self.epsilon_start = 0.2
 		self.epsilon_end = 0.01
-		self.epsilon_episode_end = 20000
+		self.epsilon_episode_end = 200
 		self.ng = 6
 		self.ns = 6
 		self.gamma = 0.99
