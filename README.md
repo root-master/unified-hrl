@@ -6,3 +6,4 @@ The code is in PyTorch. It includes unsupervised subgoal discovery, temporal abs
 
 ```python
 python main.py
+```
