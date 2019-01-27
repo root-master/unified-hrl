@@ -122,7 +122,7 @@ class Controller():
 		clipped_error = -1.0 * error.clamp(-1, 1)
 		
 		self.optimizer.zero_grad()
-		q.backward(clipped_error.data)
+		q.backward(clipped_error.data.unsqueeze(1))
 		
 		# We can use Huber loss for smoothness
 		# loss = F.smooth_l1_loss(q, target)
