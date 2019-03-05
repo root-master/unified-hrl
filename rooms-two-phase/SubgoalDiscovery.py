@@ -47,6 +47,15 @@ class SubgoalDiscovery():
 		self.centroid_subgoals = [ tuple(g) for g in list(self.C) ]
 		self.G = self.centroid_subgoals + self.outliers
 
+	def find_kmeans_clusters_random_seed(self):
+		self.X = self.experience_memory.X
+		self.kmeans = KMeans(n_clusters=self.n_clusters,init='random',max_iter=300)
+		self.kmeans.fit(self.X)
+		self.C = self.cluster_centroids()
+		self.centroid_memory.append(self.C)		
+		self.centroid_subgoals = [ tuple(g) for g in list(self.C) ]
+		self.G = self.centroid_subgoals + self.outliers
+
 	def find_gaussian_clusters(self):
 		self.gaussian = GaussianMixture(n_components=4).fit(self.X)
 
@@ -70,7 +79,7 @@ class SubgoalDiscovery():
 		if len(self.outliers) == 0:
 			self.outliers.append(outlier)
 			self.G = self.centroid_subgoals + self.outliers
-			print('discovered outlier is added to the outliers list')
+			# print('discovered outlier is added to the outliers list')
 			return
 		distance = []
 		for member in self.outliers:
@@ -104,8 +113,8 @@ class SubgoalDiscovery():
 					self.doorways.append(sp)
 					print('doorways discovered: ', s, 'and',sp)
 					self.doorway_pairs.append([s,sp])
-				else:
-					print('discovered doorways already in the doorways list')
+				# else:
+				# 	print('discovered doorways already in the doorways list')
 
 	def report(self):
 		print('outliers: ', self.outliers) 
