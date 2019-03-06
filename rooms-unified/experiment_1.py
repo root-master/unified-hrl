@@ -23,7 +23,7 @@ centroids = subgoal_discovery.centroid_subgoals
 subgoals = subgoal_discovery.G
 
 randomwalk_USD_time = time.time() - start_time
-print('Elapse time for unsupervised subgoal discovery: ', randomwalk_USD_time)
+print('Elapsed time for unsupervised subgoal discovery: ', randomwalk_USD_time)
 
 from hrl import Controller
 controller = Controller(subgoal_discovery=subgoal_discovery)
@@ -35,7 +35,7 @@ pretainer = PretrainController( env=env,
  								subgoal_discovery=subgoal_discovery)
 pretainer.train()
 pretrainer_time = time.time() - start_time
-print('Elapse time for pretraining: ', pretrainer_time)
+print('Elapsed time for pretraining: ', pretrainer_time)
 
 # pretainer.controller.Q.save_model()
 
@@ -51,5 +51,5 @@ meta_controller_trainer = MetaControllerController( env=env,
 
 meta_controller_trainer.train()
 meta_controller_time = time.time() - start_time
-print('Elapse time for training meta controller: ', meta_controller_time)
+print('Elapsed time for training meta controller: ', meta_controller_time)
 

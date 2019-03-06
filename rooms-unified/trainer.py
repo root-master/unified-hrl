@@ -63,7 +63,7 @@ class PretrainController():
 		self.controller = controller
 		self.subgoal_discovery = subgoal_discovery
 		self.subgoals = subgoal_discovery.G
-		self.max_episodes = 10000+1
+		self.max_episodes = 100000+1
 		self.max_steps = 100
 		self.epsilon = 0.2
 		self.nA = 4
@@ -83,8 +83,8 @@ class PretrainController():
 			self.pretrain_success_subgoal = []
 			self.train_for_one_goal(g_id)
 			self.success_rate[g_id] = self.success_intrinsic_motivation/self.max_episodes
-			print('success for subgoal # ',g_id,' = ', self.success_rate[g_id])
-			results_file_path = './results/pretraining_contoller_performance_results_subgoal_' + str(g_id) + '.pkl'
+			print('average success for subgoal # ',g_id,' = ', self.success_rate[g_id])
+			results_file_path = './results/pretraining_contoller_performance_results_K_' + str(self.ng) + '_subgoal_' + str(g_id) + '.pkl'
 			with open(results_file_path, 'wb') as f: 
 				pickle.dump(self.pretrain_success_subgoal, f)
 
@@ -94,10 +94,10 @@ class PretrainController():
 			s = self.env.reset()
 			for j in range(self.max_steps):	
 				Q = self.controller.Q.compute_Q(s,g_id)
-				a = self.epsilon_greedy(Q)
+				a = self.epsilon_greedy_controller(Q)
 				sp,r,done,info = self.env.step(a)
 				Qp = self.controller.Q.compute_Qp(sp, g_id)
-				ap = self.epsilon_greedy(Qp)
+				ap = self.epsilon_greedy_controller(Qp)
 				
 				terminal = False
 				if g in self.subgoal_discovery.outliers:
@@ -120,15 +120,15 @@ class PretrainController():
 				delta = delta * self.lr
 				self.controller.Q.update_w(a,delta)
 				s = copy.copy(sp)
-				if done:
-					print('solved the rooms task in episode :', i)
+				# if done:
+				# 	print('solved the rooms task in episode :', i)
 				
 				if terminal or done:
 					self.success_intrinsic_motivation += 1
 					break
 			self.pretrain_success_subgoal.append(done_mask)
 
-	def epsilon_greedy(self, Q, test=False):
+	def epsilon_greedy_controller(self, Q, test=False):
 		if test:
 			return Q.argmax()
 
@@ -156,48 +156,22 @@ class MetaControllerController():
 		self.epsilon_start = 0.2
 		self.epsilon_end = 0.01
 		self.epsilon_episode_end = 200
-		self.ng = 6
-		self.ns = 6
+		self.ng = len(self.subgoals)
+		self.ns = self.ng
 		self.gamma = 0.99
 		self.lr = 0.001
 		self.episode_rewards = []
 		self.episode_success = []
 		self.save_results_freq = 1000
-
+		self.nA = 4
+		self.R = 0
+		self.t = 0
 	def train(self):
 		print('#'*60)
 		print('Training Meta-controller in Hierarchcial Reinforcement Leaning')
 		print('#'*60)
 		for i in range(self.max_episodes):
-			self.R = 0
-			self.s = self.env.reset()
-			self.done = False
-			self.t = 0
-			while not self.done:
-				S = self.meta_controller.get_meta_state(self.s,
-										has_key=self.env.step_info['has_key'])
-				Q = self.meta_controller.Q.compute_Q(S)
-				g_id = self.epsilon_greedy(Q)
-				self.play(g_id)
-				if self.done:
-					print('solved the rooms task in episode :', i)
-					done_mask = 1
-				else:
-					done_mask = 0
-
-				if self.terminal or self.done:
-					# print('reached to the subgoal', g_id)					
-					SP = self.meta_controller.get_meta_state(self.s,
-										has_key=self.env.step_info['has_key'])
-					QP = self.meta_controller.Q.compute_QP(SP)
-					g_id_prime = self.epsilon_greedy(QP)
-					delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
-					delta = delta * self.lr
-					self.meta_controller.Q.update_w(g_id,delta)
-
-				if self.t > self.max_steps:
-					break
-
+			self.train_metacontroller()
 			self.episode_rewards.append(self.R)
 			self.episode_success.append(done_mask)
 
@@ -205,16 +179,47 @@ class MetaControllerController():
 			self.epsilon = max(self.epsilon_end,self.epsilon)
 			self.epsilon = min(self.epsilon_start,self.epsilon)
 
-		results_file_path = './results/meta_contoller_performance_results.pkl'
+		results_file_path = './results/meta_contoller_performance_results_K_' + str(self.ng) + '.pkl'
 		with open(results_file_path, 'wb') as f: 
 			pickle.dump([self.episode_rewards,self.episode_success], f)
 
-	def play(self,g_id):
+	def train_metacontroller(self):
+		self.R = 0
+		self.s = self.env.reset()
+		self.done = False
+		self.t = 0
+		while not self.done:
+			S = self.meta_controller.get_meta_state(self.s,
+									has_key=self.env.step_info['has_key'])
+			Q = self.meta_controller.Q.compute_Q(S)
+			g_id = self.epsilon_greedy_metacontroller(Q)
+			self.play_controller(g_id)
+			if self.done:
+				# print('solved the rooms task in episode :', i)
+				done_mask = 1
+			else:
+				done_mask = 0
+
+			if self.terminal or self.done:
+				# print('reached to the subgoal', g_id)					
+				SP = self.meta_controller.get_meta_state(self.s,
+									has_key=self.env.step_info['has_key'])
+				QP = self.meta_controller.Q.compute_QP(SP)
+				g_id_prime = self.epsilon_greedy_metacontroller(QP)
+				delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
+				delta = delta * self.lr
+				self.meta_controller.Q.update_w(g_id,delta)
+
+			if self.t > self.max_steps or self.done:
+				break
+
+
+	def play_controller(self,g_id):
 		s = self.s
 		g = self.subgoals[g_id]
 		for j in range(self.max_steps_controller):	
 			Q = self.controller.Q.compute_Q(s,g_id)
-			a = self.epsilon_greedy(Q,test=True)
+			a = self.epsilon_greedy_controller(Q,test=True)
 			sp,r,done,info = self.env.step(a)
 			self.R += r
 			self.done = done
@@ -236,7 +241,7 @@ class MetaControllerController():
 			if self.terminal or self.done:
 				break
 
-	def epsilon_greedy(self, Q,test=False):
+	def epsilon_greedy_metacontroller(self, Q,test=False):
 		if test:
 			return Q.argmax()
 
@@ -244,6 +249,16 @@ class MetaControllerController():
 			return randint(0, self.ng-1)
 		else:
 			return Q.argmax()
+
+	def epsilon_greedy_controller(self, Q, test=False):
+		if test:
+			return Q.argmax()
+
+		if random() < self.epsilon:
+			return randint(0, self.nA-1)
+		else:
+			return Q.argmax()
+
 
 
 class MetaControllerControllerUnified():
@@ -273,6 +288,8 @@ class MetaControllerControllerUnified():
 		self.episode_success = []
 		self.save_results_freq = 1000
 		self.nA = 4
+		self.success_test = []
+		self.return_test = []
 
 	def train(self):
 		print('#'*60)
@@ -280,53 +297,84 @@ class MetaControllerControllerUnified():
 		print('#'*60)
 		for i in range(self.max_episodes):
 			self.i = i
-			self.R = 0
-			self.s = self.env.reset()
-			self.done = False
-			self.terminal = False
-			self.t = 0
-			while not self.done:
-				S = self.meta_controller.get_meta_state(self.s,
-										has_key=self.env.step_info['has_key'])
-				Q = self.meta_controller.Q.compute_Q(S)
-				g_id = self.epsilon_greedy_metacontroller(Q)
-				self.play_train_controller(g_id)
-				if self.done:
-					print('solved the rooms task in episode :', i)
-					done_mask = 1
-				else:
-					done_mask = 0
-
-				if self.terminal or self.done:
-					# print('reached to the subgoal', g_id)					
-					SP = self.meta_controller.get_meta_state(self.s,
-										has_key=self.env.step_info['has_key'])
-					QP = self.meta_controller.Q.compute_QP(SP)
-					g_id_prime = self.epsilon_greedy_metacontroller(QP)
-					delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
-					delta = delta * self.lr_meta
-					self.meta_controller.Q.update_w(g_id,delta)
-
-				if self.t > self.max_steps:
-					break
-
+			self.train_metacontroller_controller()
 			self.episode_rewards.append(self.R)
 			self.episode_success.append(done_mask)
 
-			self.epsilon = self.epsilon_start + (self.epsilon_end-self.epsilon_start) * (i / self.epsilon_episode_end)
-			self.epsilon = max(self.epsilon_end,self.epsilon)
-			self.epsilon = min(self.epsilon_start,self.epsilon)
+			# self.epsilon = self.epsilon_start + (self.epsilon_end-self.epsilon_start) * (i / self.epsilon_episode_end)
+			# self.epsilon = max(self.epsilon_end,self.epsilon)
+			# self.epsilon = min(self.epsilon_start,self.epsilon)
+			if i>0 and i % 100 == 0:
+				self.test_metacontroller_controller()
 
-		results_file_path = './results/meta_contoller_controller_performance_results.pkl'
+		results_file_path = './results/meta_contoller_controller_performance_results_K_' + str(self.ng) + '.pkl'
 		with open(results_file_path, 'wb') as f: 
-			pickle.dump([self.episode_rewards,self.episode_success], f)
+			pickle.dump([self.episode_rewards,
+						self.episode_success,
+						self.return_test,
+						self.success_test], f)
+
+	def train_metacontroller_controller(self):
+		self.R = 0
+		self.s = self.env.reset()
+		self.done = False
+		self.t = 0
+		self.terminal = False
+		while not self.done:
+			S = self.meta_controller.get_meta_state(self.s,
+									has_key=self.env.step_info['has_key'])
+			Q = self.meta_controller.Q.compute_Q(S)
+			g_id = self.epsilon_greedy_metacontroller(Q)
+			self.play_train_controller(g_id)
+			if self.done:
+				# print('solved the rooms task in episode :', i)
+				done_mask = 1
+			else:
+				done_mask = 0
+
+			if self.terminal or self.done:
+				# print('reached to the subgoal', g_id)					
+				SP = self.meta_controller.get_meta_state(self.s,
+									has_key=self.env.step_info['has_key'])
+				QP = self.meta_controller.Q.compute_QP(SP)
+				g_id_prime = self.epsilon_greedy_metacontroller(QP)
+				delta = self.R + self.gamma * (1 - done_mask) * QP[0,g_id_prime] - Q[0,g_id]
+				delta = delta * self.lr_meta
+				self.meta_controller.Q.update_w(g_id,delta)
+
+			if self.t > self.max_steps:
+				break
+
+	def test_metacontroller_controller(self):
+		self.R = 0
+		self.s = self.env.reset()
+		self.done = False
+		self.t = 0
+		self.terminal = False
+		while not self.done:
+			S = self.meta_controller.get_meta_state(self.s,
+									has_key=self.env.step_info['has_key'])
+			Q = self.meta_controller.Q.compute_Q(S)
+			g_id = self.epsilon_greedy_metacontroller(Q,test=True)
+			self.play_greedy_controller(g_id)
+
+			if self.done:
+				done_mask = 1
+			else:
+				done_mask = 0
+
+			if self.t > self.max_steps or self.done:
+				self.success_test.append(done_mask)
+				self.return_test.append(self.R)
+				break
+
 
 	def play_greedy_controller(self,g_id):
 		s = self.s
 		g = self.subgoals[g_id]
 		for j in range(self.max_steps_controller):	
 			Q = self.controller.Q.compute_Q(s,g_id)
-			a = self.epsilon_greedy(Q,test=True)
+			a = self.epsilon_greedy_controller(Q,test=True)
 			sp,r,done,info = self.env.step(a)
 			self.R += r
 			self.done = done
@@ -341,6 +389,11 @@ class MetaControllerControllerUnified():
 					terminal = True
 
 			self.terminal = terminal
+			s = copy.copy(sp)
+			self.s = s
+			self.t += 1
+			if self.terminal or self.done:
+				break		
 
 	def play_train_controller(self,g_id):
 		s = self.s
@@ -377,17 +430,10 @@ class MetaControllerControllerUnified():
 			delta = delta * self.lr_cont
 			self.controller.Q.update_w(a,delta)
 			s = copy.copy(sp)
-			
-			if terminal or done:
-				break
-		# self.controller_success_subgoal.append(done_mask)
-
-			s = copy.copy(sp)
 			self.s = s
 			self.t += 1
 			if self.terminal or self.done:
 				break
-		return
 
 	def epsilon_greedy_metacontroller(self, Q,test=False):
 		if test:
@@ -445,7 +491,7 @@ class VanillaRL():
 				self.Q.update_w(a,delta)
 				s = copy.copy(sp)
 				if done:
-					print('solved the rooms task in episode :', i)
+					# print('solved the rooms task in episode :', i)
 					break
 			self.episode_rewards.append(self.R)
 			self.episode_success.append(done_mask)
