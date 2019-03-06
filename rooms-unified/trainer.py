@@ -35,7 +35,7 @@ class RandomWalk():
 
 			if i>0 and i%25 == 0:
 				self.subgoal_discovery.find_kmeans_clusters()
-				self.subgoal_discovery.report()
+				# self.subgoal_discovery.report()
 
 	def walk_and_find_doorways(self):
 		print('#'*60)
@@ -315,7 +315,7 @@ class MetaControllerControllerUnified():
 			self.epsilon = max(self.epsilon_end,self.epsilon)
 			self.epsilon = min(self.epsilon_start,self.epsilon)
 
-		results_file_path = './results/meta_contoller_performance_results.pkl'
+		results_file_path = './results/meta_contoller_controller_performance_results.pkl'
 		with open(results_file_path, 'wb') as f: 
 			pickle.dump([self.episode_rewards,self.episode_success], f)
 

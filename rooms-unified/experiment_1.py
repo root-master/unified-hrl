@@ -5,7 +5,7 @@ from ExperienceReplayMemory import ExperienceReplayMemory
 experience_memory = ExperienceReplayMemory(memory_size=10000)
 
 from SubgoalDiscovery import SubgoalDiscovery
-subgoal_discovery = SubgoalDiscovery(n_clusters=8,experience_memory=experience_memory)
+subgoal_discovery = SubgoalDiscovery(n_clusters=6,experience_memory=experience_memory)
 
 import gym
 from gym_rooms.envs import *
@@ -22,8 +22,8 @@ outliers = subgoal_discovery.outliers
 centroids = subgoal_discovery.centroid_subgoals
 subgoals = subgoal_discovery.G
 
-randomwalk_USD_time = time.time()
-print('Elapse time for subgoal discovery: ', randomwalk_USD_time-start_time)
+randomwalk_USD_time = time.time() - start_time
+print('Elapse time for unsupervised subgoal discovery: ', randomwalk_USD_time)
 
 from hrl import Controller
 controller = Controller(subgoal_discovery=subgoal_discovery)
@@ -34,6 +34,9 @@ pretainer = PretrainController( env=env,
  								controller=controller,
  								subgoal_discovery=subgoal_discovery)
 pretainer.train()
+pretrainer_time = time.time() - start_time
+print('Elapse time for pretraining: ', pretrainer_time)
+
 # pretainer.controller.Q.save_model()
 
 # pretainer.controller.Q.load_model()
@@ -47,17 +50,6 @@ meta_controller_trainer = MetaControllerController( env=env,
 								subgoal_discovery=subgoal_discovery)
 
 meta_controller_trainer.train()
-
-# from trainer import MetaControllerControllerUnified
-# meta_controller_controller_trainer = MetaControllerControllerUnified( env=env,
-# 									controller=pretainer.controller,
-# 									meta_controller=meta_controller,
-# 									subgoal_discovery=subgoal_discovery)
-
-# meta_controller_controller_trainer.train()
-
-
-# from trainer import VanillaRL
-# vanilla_rl = VanillaRL(env=env)
-# vanilla_rl.train()
+meta_controller_time = time.time() - start_time
+print('Elapse time for training meta controller: ', meta_controller_time)
 

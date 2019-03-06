@@ -34,10 +34,10 @@ class SubgoalDiscovery():
 			self.X = self.experience_memory.X
 
 		if self.C is None:
-			print('first time of using kmeans to find centroids')
+			# print('first time of using kmeans to find centroids')
 			init = 'random' 
 		else:
-			print('updating Kmeans centroids using previous centroids')
+			# print('updating Kmeans centroids using previous centroids')
 			init = self.C
 		if self.kmeans is None:
 			self.kmeans = KMeans(n_clusters=self.n_clusters,init=init,max_iter=300)
@@ -87,9 +87,9 @@ class SubgoalDiscovery():
 		if min(distance) >= threshold:
 			self.outliers.append(outlier)
 			self.G = self.centroid_subgoals + self.outliers
-			print('outlier discovered: ', outlier)
-		else:
-			print('discovered outlier already in the outliers list')
+		# 	print('outlier discovered: ', outlier)
+		# else:
+		# 	print('discovered outlier already in the outliers list')
 
 	def push_doorways(self,e,threshold=5):
 		s = e[0]
