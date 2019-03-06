@@ -149,7 +149,7 @@ class MetaControllerController():
 		self.meta_controller = meta_controller
 		self.subgoal_discovery = subgoal_discovery
 		self.subgoals = subgoal_discovery.G
-		self.max_episodes = 100+1
+		self.max_episodes = 100000+1
 		self.max_steps = 200
 		self.max_steps_controller = 25
 		self.epsilon = 0.2
@@ -161,10 +161,12 @@ class MetaControllerController():
 		self.gamma = 0.99
 		self.lr = 0.001
 		self.episode_rewards = []
+		self.episode_score = []
 		self.episode_success = []
 		self.save_results_freq = 1000
 		self.nA = 4
-		self.R = 0
+		self.R = 0 # return
+		self.G = 0 # score (r>0)
 		self.t = 0
 	def train(self):
 		print('#'*60)
@@ -173,7 +175,8 @@ class MetaControllerController():
 		for i in range(self.max_episodes):
 			self.train_metacontroller()
 			self.episode_rewards.append(self.R)
-			self.episode_success.append(done_mask)
+			self.episode_success.append(self.done_mask)
+			self.episode_score.append(self.G)
 
 			self.epsilon = self.epsilon_start + (self.epsilon_end-self.epsilon_start) * (i / self.epsilon_episode_end)
 			self.epsilon = max(self.epsilon_end,self.epsilon)
@@ -181,10 +184,13 @@ class MetaControllerController():
 
 		results_file_path = './results/meta_contoller_performance_results_K_' + str(self.ng) + '.pkl'
 		with open(results_file_path, 'wb') as f: 
-			pickle.dump([self.episode_rewards,self.episode_success], f)
+			pickle.dump([self.episode_rewards,
+						 self.episode_score,
+						 self.episode_success], f)
 
 	def train_metacontroller(self):
 		self.R = 0
+		self.G = 0
 		self.s = self.env.reset()
 		self.done = False
 		self.t = 0
@@ -199,6 +205,7 @@ class MetaControllerController():
 				done_mask = 1
 			else:
 				done_mask = 0
+			self.done_mask = done_mask
 
 			if self.terminal or self.done:
 				# print('reached to the subgoal', g_id)					
@@ -222,6 +229,8 @@ class MetaControllerController():
 			a = self.epsilon_greedy_controller(Q,test=True)
 			sp,r,done,info = self.env.step(a)
 			self.R += r
+			if r>0:
+				self.G += r
 			self.done = done
 
 			terminal = False
@@ -272,7 +281,7 @@ class MetaControllerControllerUnified():
 		self.meta_controller = meta_controller
 		self.subgoal_discovery = subgoal_discovery
 		self.subgoals = subgoal_discovery.G
-		self.max_episodes = 10000+1
+		self.max_episodes = 100000+1
 		self.max_steps = 200
 		self.max_steps_controller = 50
 		self.epsilon = 0.2
@@ -286,10 +295,13 @@ class MetaControllerControllerUnified():
 		self.lr_cont = 0.0001
 		self.episode_rewards = []
 		self.episode_success = []
+		self.episode_score = []
 		self.save_results_freq = 1000
 		self.nA = 4
 		self.success_test = []
 		self.return_test = []
+		self.score_test = []
+		self.G = 0 # score
 
 	def train(self):
 		print('#'*60)
@@ -299,23 +311,30 @@ class MetaControllerControllerUnified():
 			self.i = i
 			self.train_metacontroller_controller()
 			self.episode_rewards.append(self.R)
-			self.episode_success.append(done_mask)
+			self.episode_success.append(self.done_mask)
+			self.episode_score.append(self.G)
 
 			# self.epsilon = self.epsilon_start + (self.epsilon_end-self.epsilon_start) * (i / self.epsilon_episode_end)
 			# self.epsilon = max(self.epsilon_end,self.epsilon)
 			# self.epsilon = min(self.epsilon_start,self.epsilon)
 			if i>0 and i % 100 == 0:
 				self.test_metacontroller_controller()
+				self.return_test.append(self.R)
+				self.score_test.append(self.G)
+				self.success_test.append(self.done_mask)
 
 		results_file_path = './results/meta_contoller_controller_performance_results_K_' + str(self.ng) + '.pkl'
 		with open(results_file_path, 'wb') as f: 
 			pickle.dump([self.episode_rewards,
+						self.episode_score,
 						self.episode_success,
 						self.return_test,
+						self.score_test,
 						self.success_test], f)
 
 	def train_metacontroller_controller(self):
 		self.R = 0
+		self.G = 0
 		self.s = self.env.reset()
 		self.done = False
 		self.t = 0
@@ -331,6 +350,7 @@ class MetaControllerControllerUnified():
 				done_mask = 1
 			else:
 				done_mask = 0
+			self.done_mask = done_mask
 
 			if self.terminal or self.done:
 				# print('reached to the subgoal', g_id)					
@@ -346,6 +366,7 @@ class MetaControllerControllerUnified():
 				break
 
 	def test_metacontroller_controller(self):
+		self.G = 0
 		self.R = 0
 		self.s = self.env.reset()
 		self.done = False
@@ -362,10 +383,9 @@ class MetaControllerControllerUnified():
 				done_mask = 1
 			else:
 				done_mask = 0
+			self.done_mask = done_mask
 
 			if self.t > self.max_steps or self.done:
-				self.success_test.append(done_mask)
-				self.return_test.append(self.R)
 				break
 
 
@@ -378,6 +398,8 @@ class MetaControllerControllerUnified():
 			sp,r,done,info = self.env.step(a)
 			self.R += r
 			self.done = done
+			if r > 0:
+				self.G += r
 
 			terminal = False
 			if g in self.subgoal_discovery.outliers:
@@ -403,6 +425,8 @@ class MetaControllerControllerUnified():
 			a = self.epsilon_greedy_controller(Q)
 			sp,r,done,info = self.env.step(a)
 			self.R += r
+			if r>0:
+				self.G += r
 			self.done = done
 
 			Qp = self.controller.Q.compute_Qp(sp, g_id)
@@ -500,7 +524,6 @@ class VanillaRL():
 		with open(results_file_path, 'wb') as f: 
 			pickle.dump([self.episode_rewards,self.episode_success], f)
 					
-
 	def epsilon_greedy(self, Q,test=False):
 		if test:
 			return Q.argmax()

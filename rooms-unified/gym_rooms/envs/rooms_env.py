@@ -493,7 +493,7 @@ class MiniGridEnv(gym.Env):
 		if targetCell == None:
 			self.agentPos = newPos
 		elif targetCell.type == 'wall':
-			reward = -2 # bumped to wall
+			reward = -0.2 # bumped to wall
 			newPos = oldPos
 		elif targetCell.type == 'key':
 			reward = +10

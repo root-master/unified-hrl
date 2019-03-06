@@ -38,6 +38,7 @@ pretainer.train()
 
 # pretainer.controller.Q.load_model()
 from hrl import MetaController
+meta_controller = MetaController(subgoal_discovery=subgoal_discovery)
 
 from trainer import MetaControllerControllerUnified
 meta_controller_controller_trainer = MetaControllerControllerUnified( env=env,
