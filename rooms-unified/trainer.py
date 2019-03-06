@@ -2,6 +2,8 @@ import copy
 from random import random, randint
 import pickle
 from Model import VanillaRLModel
+from tqdm import tqdm
+
 class RandomWalk():
 	def __init__(self,
 				env=None,
@@ -88,7 +90,7 @@ class PretrainController():
 
 	def train_for_one_goal(self,g_id):
 		g = self.subgoals[g_id]
-		for i in range(self.max_episodes):
+		for i in tqdm(range(self.max_episodes)):
 			s = self.env.reset()
 			for j in range(self.max_steps):	
 				Q = self.controller.Q.compute_Q(s,g_id)
