@@ -34,6 +34,9 @@ pretainer = PretrainController( env=env,
  								controller=controller,
  								subgoal_discovery=subgoal_discovery)
 pretainer.train()
+pretrainer_time = time.time() - start_time
+print('Elapsed time for pretraining: ', pretrainer_time)
+
 # pretainer.controller.Q.save_model()
 
 # pretainer.controller.Q.load_model()
@@ -47,3 +50,6 @@ meta_controller_controller_trainer = MetaControllerControllerUnified( env=env,
 									subgoal_discovery=subgoal_discovery)
 
 meta_controller_controller_trainer.train()
+meta_controller_time = time.time() - start_time
+print('Elapsed time for training meta controller: ', meta_controller_time)
+
