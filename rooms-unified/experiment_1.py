@@ -5,7 +5,7 @@ from ExperienceReplayMemory import ExperienceReplayMemory
 experience_memory = ExperienceReplayMemory(memory_size=10000)
 
 from SubgoalDiscovery import SubgoalDiscovery
-subgoal_discovery = SubgoalDiscovery(n_clusters=6,experience_memory=experience_memory)
+subgoal_discovery = SubgoalDiscovery(n_clusters=8,experience_memory=experience_memory)
 
 import gym
 from gym_rooms.envs import *
