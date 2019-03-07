@@ -275,7 +275,8 @@ class MetaControllerControllerUnified():
 				env=None,
 				controller=None,
 				meta_controller=None,
-				subgoal_discovery=None):
+				subgoal_discovery=None,
+				pretrain=True):
 		self.env = env
 		self.controller = controller
 		self.meta_controller = meta_controller
@@ -302,6 +303,10 @@ class MetaControllerControllerUnified():
 		self.return_test = []
 		self.score_test = []
 		self.G = 0 # score
+		self.pretrain = pretrain
+		if not self.pretrain:
+			self.max_episodes = 1000000+1
+
 
 	def train(self):
 		print('#'*60)
@@ -324,6 +329,9 @@ class MetaControllerControllerUnified():
 				self.success_test.append(self.done_mask)
 
 		results_file_path = './results/meta_contoller_controller_performance_results_K_' + str(self.ng) + '.pkl'
+		if not self.pretrain:
+			results_file_path = './results/meta_contoller_controller_no_pretrain_performance_results_K_' + str(self.ng) + '.pkl'
+
 		with open(results_file_path, 'wb') as f: 
 			pickle.dump([self.episode_rewards,
 						self.episode_score,

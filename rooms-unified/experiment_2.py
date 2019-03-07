@@ -29,27 +29,17 @@ from hrl import Controller
 controller = Controller(subgoal_discovery=subgoal_discovery)
 
 env.cross_hallway = True
-from trainer import PretrainController
-pretainer = PretrainController( env=env,
- 								controller=controller,
- 								subgoal_discovery=subgoal_discovery)
-pretainer.train()
-pretrainer_time = time.time() - start_time
-print('Elapsed time for pretraining: ', pretrainer_time)
-
-# pretainer.controller.Q.save_model()
-
-# pretainer.controller.Q.load_model()
 from hrl import MetaController
 meta_controller = MetaController(subgoal_discovery=subgoal_discovery)
 
 from trainer import MetaControllerControllerUnified
 meta_controller_controller_trainer = MetaControllerControllerUnified( env=env,
-									controller=pretainer.controller,
+									controller=controller,
 									meta_controller=meta_controller,
-									subgoal_discovery=subgoal_discovery)
+									subgoal_discovery=subgoal_discovery,
+									pretrain=False)
 
 meta_controller_controller_trainer.train()
-meta_controller_time = time.time() - start_time
-print('Elapsed time for training meta controller: ', meta_controller_time)
+meta_controller_controller_time = time.time() - start_time
+print('Elapsed time for training meta controller: ', meta_controller_controller_time)
 
