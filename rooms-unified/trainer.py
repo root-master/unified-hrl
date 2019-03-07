@@ -312,7 +312,7 @@ class MetaControllerControllerUnified():
 		print('#'*60)
 		print('Training Meta-controller and Controller together')
 		print('#'*60)
-		for i in range(self.max_episodes):
+		for i in tqdm(range(self.max_episodes)):
 			self.i = i
 			self.train_metacontroller_controller()
 			self.episode_rewards.append(self.R)
